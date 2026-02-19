@@ -1,3 +1,31 @@
+"""GPS-distance-based evaluation metrics (SDM@K and MA@K) for DenseUAV.
+
+Loads pre-computed query/gallery features from a ``.mat`` file (produced by
+``test.py``) together with GPS coordinates from ``Dense_GPS_ALL.txt``, then
+computes two distance-aware retrieval metrics:
+
+- **SDM@K** (Soft Distance Metric at K): weighted exponential decay score
+  averaged over the top-K retrieved gallery items.
+- **MA@K** (Meter Accuracy at K): fraction of queries whose top-1 retrieved
+  gallery is within K metres of the true location.
+
+Example:
+    Evaluate drone-to-satellite retrieval (mode 1)::
+
+        python evaluateDistance.py \\
+            --root_dir /path/to/DenseUAV/ \\
+            --mode 1 --K 1 3 5 10 --M 5000
+
+    Evaluate satellite-to-drone retrieval (mode 2)::
+
+        python evaluateDistance.py --root_dir /path/to/DenseUAV/ --mode 2
+
+Outputs:
+    - Prints SDM@K values for each K in ``--K`` to stdout.
+    - ``SDM@K(1,100).json`` — full SDM@K curve from K=1 to K=100.
+    - ``MA@K(1,100)``       — full MA@K curve from K=1 to K=100 (metres).
+"""
+
 import argparse
 import scipy.io
 import torch
@@ -48,7 +76,13 @@ image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x)) for x in [
 #####################################################################
 # Show result
 def imshow(path, title=None):
-    """Imshow for Tensor."""
+    """Display an image from disk using Matplotlib.
+
+    Args:
+        path (str): Absolute or relative path to the image file.
+        title (str, optional): Title to display above the image.
+            Defaults to ``None``.
+    """
     im = plt.imread(path)
     plt.imshow(im)
     if title is not None:
@@ -82,6 +116,24 @@ gallery_feature = gallery_feature.cuda()
 #######################################################################
 # sort the images and return topK index
 def sort_img(qf, ql, gf, gl, K):
+    """Rank gallery images by cosine similarity to a query and return the top-K indices.
+
+    Junk gallery entries (label ``-1``) are removed from the ranked list
+    before the top-K selection.
+
+    Args:
+        qf (torch.Tensor): Query feature vector of shape ``(D,)``, on GPU.
+        ql (int): Integer class label of the query (used to identify positive
+            matches; not used for filtering here).
+        gf (torch.Tensor): Gallery feature matrix of shape ``(N, D)``, on GPU.
+        gl (numpy.ndarray): Integer class labels of all gallery images,
+            shape ``(N,)``.
+        K (int): Number of top results to return.
+
+    Returns:
+        numpy.ndarray: Indices of the top-K gallery images (after junk
+            removal) ranked by descending cosine similarity, shape ``(K,)``.
+    """
     query = qf.view(-1, 1)
     # print(query.shape)
     score = torch.mm(gf, query)
@@ -103,6 +155,22 @@ def sort_img(qf, ql, gf, gl, K):
 
 
 def getLatitudeAndLongitude(imgPath):
+    """Look up the GPS coordinates for one or more image paths.
+
+    Coordinates are retrieved from the pre-loaded ``configDict`` which maps
+    each location folder name (e.g. ``'000123'``) to ``[longitude_E,
+    latitude_N]``.
+
+    Args:
+        imgPath (str | list[str]): A single image path string or a list of
+            image path strings.  The second-to-last path component is used as
+            the lookup key.
+
+    Returns:
+        list | list[list]: For a single path, a two-element list
+            ``[longitude_E, latitude_N]``.  For a list of paths, a list of
+            such two-element lists.
+    """
     if isinstance(imgPath, list):
         posInfo = [configDict[p.split("/")[-2]] for p in imgPath]
     else:
@@ -111,6 +179,20 @@ def getLatitudeAndLongitude(imgPath):
 
 
 def euclideanDistance(query, gallery):
+    """Compute the Euclidean distance between a query position and each gallery position.
+
+    Operates in the raw coordinate space (longitude/latitude degrees or any
+    2-D Euclidean space).  For geodesic (metre) distances use
+    :func:`latlog2meter`.
+
+    Args:
+        query (array_like): Query position of shape ``(2,)`` — ``[lon, lat]``.
+        gallery (array_like): Gallery positions of shape ``(K, 2)``.
+
+    Returns:
+        numpy.ndarray: 1-D array of shape ``(K,)`` containing the Euclidean
+            distance from the query to each of the K gallery positions.
+    """
     query = np.array(query, dtype=np.float32)
     gallery = np.array(gallery, dtype=np.float32)
     A = gallery - query
@@ -123,6 +205,24 @@ def euclideanDistance(query, gallery):
 
 
 def evaluateSingle(distance, K):
+    """Compute the SDM score for a single query given top-K gallery distances.
+
+    The score is a weighted mean of exponential decay values::
+
+        score = sum(w_k * exp(-d_k * M)) / sum(w_k)
+
+    where ``w_k = 1 - k/K`` (linearly decreasing rank weights) and ``M`` is a
+    scale factor (``opts.M``).
+
+    Args:
+        distance (numpy.ndarray): Array of shape ``(K,)`` containing the
+            coordinate-space distances from the query to each of the top-K
+            gallery samples.
+        K (int): Number of top retrieved results to include in the score.
+
+    Returns:
+        float: SDM score in ``[0, 1]``; higher is better.
+    """
     # maxDistance = max(distance) + 1e-14
     # weight = np.ones(K) - np.log(range(1, K + 1, 1)) / np.log(opts.M * K)
     weight = np.ones(K) - np.array(range(0, K, 1))/K
@@ -134,11 +234,22 @@ def evaluateSingle(distance, K):
 
 
 def latlog2meter(lata, loga, latb, logb):
-    # log 纬度 lat 经度 
-    # EARTH_RADIUS = 6371.0
+    """Compute the geodesic distance between two GPS coordinates using the Haversine formula.
+
+    Args:
+        lata (float): Latitude of point A in decimal degrees.
+        loga (float): Longitude of point A in decimal degrees.
+        latb (float): Latitude of point B in decimal degrees.
+        logb (float): Longitude of point B in decimal degrees.
+
+    Returns:
+        float: Great-circle distance between the two points in **metres**,
+            assuming an Earth radius of 6378.137 km (WGS-84 equatorial).
+    """
+    # Note: variable names follow the convention lon=longitude, lat=latitude
     EARTH_RADIUS =6378.137
     PI = math.pi
-    # // 转弧度
+    # Convert degrees to radians
     lat_a = lata * PI / 180
     lat_b = latb * PI / 180
     a = lat_a - lat_b
@@ -151,6 +262,22 @@ def latlog2meter(lata, loga, latb, logb):
 
 
 def evaluate_SDM(indexOfTopK, queryIndex, K):
+    """Compute the SDM@K score for a single query.
+
+    Looks up GPS coordinates for the query and its top-K gallery results,
+    computes coordinate-space Euclidean distances, and returns the SDM score
+    via :func:`evaluateSingle`.
+
+    Args:
+        indexOfTopK (numpy.ndarray): Gallery indices of the top-K ranked
+            results (output of :func:`sort_img`).
+        queryIndex (int): Index of the query image within
+            ``image_datasets[query_name].imgs``.
+        K (int): Number of top results to include in the score.
+
+    Returns:
+        float: SDM@K score for this query; higher is better.
+    """
     query_path, _ = image_datasets[query_name].imgs[queryIndex]
     galleryTopKPath = [image_datasets[gallery_name].imgs[i][0]
                        for i in indexOfTopK[:K]]
@@ -165,6 +292,21 @@ def evaluate_SDM(indexOfTopK, queryIndex, K):
 
 
 def evaluate_MA(indexOfTop1, queryIndex):
+    """Compute the geodesic distance (metres) between a query and its top-1 gallery match.
+
+    Used to build the MA@K curve: a query contributes to MA@K if the returned
+    distance is less than K metres.
+
+    Args:
+        indexOfTop1 (int): Gallery index of the top-1 ranked result for this
+            query.
+        queryIndex (int): Index of the query image within
+            ``image_datasets[query_name].imgs``.
+
+    Returns:
+        float: Haversine distance in metres between the query GPS position
+            and the top-1 gallery GPS position.
+    """
     query_path, _ = image_datasets[query_name].imgs[queryIndex]
     galleryTopKPath = image_datasets[gallery_name].imgs[indexOfTop1][0]
     # get position information including latitude and longitude

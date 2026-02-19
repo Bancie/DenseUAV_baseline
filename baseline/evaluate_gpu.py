@@ -1,3 +1,25 @@
+"""GPU-accelerated CMC and mAP evaluation for DenseUAV geo-localization.
+
+Loads pre-computed query and gallery features from ``pytorch_result_1.mat``
+(produced by ``test.py``), computes per-query Average Precision and Cumulative
+Matching Characteristic (CMC) curves using GPU dot-product similarity, and
+prints Recall@K and mAP metrics.
+
+Example:
+    Run standard single-query evaluation::
+
+        python evaluate_gpu.py
+
+    The script expects ``pytorch_result_1.mat`` in the current working
+    directory.  Optionally, if ``multi_query.mat`` is present, multi-query
+    evaluation is also performed.
+
+Outputs:
+    Prints to stdout::
+
+        Recall@1:<val> Recall@5:<val> Recall@10:<val> Recall@top1:<val> AP:<val>
+"""
+
 import scipy.io
 import torch
 import numpy as np
@@ -7,6 +29,26 @@ import os
 #######################################################################
 # Evaluate
 def evaluate(qf,ql,gf,gl):
+    """Compute Average Precision and CMC curve for a single query.
+
+    Ranks all gallery samples by cosine similarity to the query, removes
+    junk samples (label ``-1``), then delegates to :func:`compute_mAP`.
+
+    Args:
+        qf (torch.Tensor): Query feature vector of shape ``(D,)``, residing
+            on GPU.
+        ql (int): Integer class label of the query.
+        gf (torch.Tensor): Gallery feature matrix of shape ``(N, D)``,
+            residing on GPU.
+        gl (numpy.ndarray): Integer class labels for all gallery samples,
+            shape ``(N,)``.
+
+    Returns:
+        tuple:
+            - ap (float): Average Precision for this query.
+            - cmc (torch.IntTensor): CMC curve of length ``N``; ``cmc[k]``
+              is 1 if the correct match appears in the top ``k+1`` results.
+    """
     query = qf.view(-1,1)
     # print(query.shape)
     score = torch.mm(gf,query)
@@ -28,6 +70,28 @@ def evaluate(qf,ql,gf,gl):
 
 
 def compute_mAP(index, good_index, junk_index):
+    """Compute Average Precision and CMC for a single ranked list.
+
+    Junk samples are excluded from the ranked list before computing metrics.
+    AP is computed via the trapezoidal rule over the precision–recall curve.
+
+    Args:
+        index (numpy.ndarray): Gallery indices sorted by descending similarity,
+            shape ``(N,)``.
+        good_index (numpy.ndarray): Indices of true-positive gallery samples,
+            shape ``(G, 1)`` or ``(G,)``.
+        junk_index (numpy.ndarray): Indices of junk gallery samples to ignore,
+            shape ``(J, 1)`` or ``(J,)``.
+
+    Returns:
+        tuple:
+            - ap (float): Average Precision; ``0.0`` if ``good_index`` is
+              empty.
+            - cmc (torch.IntTensor): Binary CMC array of length ``N``;
+              ``cmc[k] = 1`` means a correct match was found within the top
+              ``k+1`` retrieved results.  ``cmc[0] = -1`` signals an empty
+              ``good_index``.
+    """
     ap = 0
     cmc = torch.IntTensor(len(index)).zero_()
     if good_index.size==0:   # if empty
@@ -110,4 +174,3 @@ if multi:
     CMC = CMC.float()
     CMC = CMC/len(query_label) #average CMC
     print('multi Rank@1:%f Rank@5:%f Rank@10:%f mAP:%f'%(CMC[0],CMC[4],CMC[9],ap/len(query_label)))
-
