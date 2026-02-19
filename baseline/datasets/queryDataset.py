@@ -8,6 +8,18 @@ import math
 
 
 class Dataset_query(Dataset):
+    """Placeholder query dataset for test-time loading.
+
+    Provides the skeleton for loading query images from a file list.
+    Subclasses or future implementations should override ``__getitem__``
+    with the actual loading logic.
+
+    Args:
+        filename (str): Path to the file that lists query image paths.
+        transformer (callable): Transform applied to each loaded image.
+        basedir (str): Root directory prepended to relative image paths.
+    """
+
     def __init__(self, filename, transformer, basedir):
         super(Dataset_query, self).__init__()
         self.filename = filename
@@ -15,23 +27,38 @@ class Dataset_query(Dataset):
         self.basedir = basedir
 
     def __getitem__(self, item):
+        """Return the sample at position ``item``.
+
+        Args:
+            item (int): Sample index.
+
+        Returns:
+            None: Not yet implemented; subclasses should provide loading logic.
+        """
         pass
 
     def __len__(self):
+        """Return the number of query samples.
+
+        Returns:
+            int: Length of this dataset instance.
+        """
         return len(self)
 
 
 class Query_transforms(object):
-    """Composes several transforms together.
+    """Prepend a horizontally-mirrored pad to a query image.
+
+    Pads the left side of an image by mirroring the first ``pad`` columns,
+    then crops the result back to ``size`` pixels wide.  This is used to
+    handle the wraparound boundary condition for panoramic/cylindrical UAV
+    query images.
 
     Args:
-        transforms (list of ``Transform`` objects): list of transforms to compose.
-
-    Example:
-        >>> transforms.Compose([
-        >>>     transforms.CenterCrop(10),
-        >>>     transforms.ToTensor(),
-        >>> ])
+        pad (int, optional): Number of columns to mirror and prepend.
+            Defaults to ``20``.
+        size (int, optional): Output width in pixels after prepending.
+            Defaults to ``256``.
     """
 
     def __init__(self, pad=20, size=256):
@@ -39,9 +66,18 @@ class Query_transforms(object):
         self.size = size
 
     def __call__(self, img):
+        """Apply the mirror-pad transform to a PIL image.
+
+        Args:
+            img (PIL.Image.Image): Input RGB image.
+
+        Returns:
+            PIL.Image.Image: Image with the mirror-padded left border,
+            cropped to width ``size``.
+        """
         img_ = np.array(img).copy()
         img_part = img_[:, 0:self.pad, :]
-        img_flip = cv2.flip(img_part, 1)  # 镜像
+        img_flip = cv2.flip(img_part, 1)  # horizontal mirror
         image = np.concatenate((img_flip, img_), axis=1)
         image = image[:, 0:self.size, :]
         image = Image.fromarray(image.astype('uint8')).convert('RGB')
@@ -49,22 +85,32 @@ class Query_transforms(object):
 
 
 class CenterCrop(object):
-    """Composes several transforms together.
+    """Crop an image to a square by removing equal margins from the longer side.
 
-    Args:
-        transforms (list of ``Transform`` objects): list of transforms to compose.
+    Computes the largest square that fits in the centre of the image and
+    returns it.  The aspect ratio is preserved only in the sense that no
+    scaling is applied—pixels are simply discarded from the longer axis.
 
-    Example:
-        >>> transforms.Compose([
-        >>>     transforms.CenterCrop(10),
-        >>>     transforms.ToTensor(),
-        >>> ])
+    Note:
+        This transform calls ``cv2.imshow`` during execution, which is
+        intended for debugging purposes only.
     """
 
     def __init__(self):
         pass
 
     def __call__(self, img):
+        """Crop the image to a centre-aligned square region.
+
+        Args:
+            img (PIL.Image.Image): Input RGB image of arbitrary aspect ratio.
+
+        Returns:
+            PIL.Image.Image: Square-cropped image.
+
+        Raises:
+            AssertionError: If the resulting crop is not square.
+        """
         img_ = np.array(img).copy()
         h, w, c = img_.shape
         min_edge = min((h, w))
@@ -81,12 +127,39 @@ class CenterCrop(object):
 
 
 class RotateAndCrop(object):
+    """Randomly rotate a satellite image and extract a square crop via perspective warp.
+
+    With probability ``rate`` the transform selects a random rotation angle,
+    computes a quadrilateral inscribed in the image circle at that angle, and
+    applies a perspective warp to map the quadrilateral to a canonical
+    ``output_size`` square.  This simulates the effect of a drone viewing the
+    same location from a different heading.
+
+    Args:
+        rate (float): Probability of applying the rotation-crop.  When a
+            uniform random sample exceeds ``rate`` the original image is
+            returned unchanged.
+        output_size (tuple[int, int], optional): ``(height, width)`` of the
+            output square.  Defaults to ``(512, 512)``.
+        rotate_range (int, optional): Upper bound (exclusive) for the
+            random rotation angle in degrees.  Defaults to ``360``.
+    """
+
     def __init__(self, rate, output_size=(512, 512), rotate_range=360):
         self.rate = rate
         self.output_size = output_size
         self.rotate_range = rotate_range
 
     def __call__(self, img):
+        """Apply the random rotate-and-crop augmentation.
+
+        Args:
+            img (PIL.Image.Image): Input RGB image.
+
+        Returns:
+            PIL.Image.Image: Either the perspective-warped crop (with
+            probability ``rate``) or the original image unchanged.
+        """
         img_ = np.array(img).copy()
 
         def getPosByAngle(img, angle):
@@ -122,10 +195,30 @@ class RotateAndCrop(object):
 
 
 class RandomCrop(object):
+    """Randomly crop a fraction of pixels from each border of an image.
+
+    Selects a random inset from each edge proportional to ``rate`` and
+    returns the interior crop.  Unlike ``torchvision.transforms.RandomCrop``
+    this operates in proportion to the image dimensions rather than in
+    absolute pixels.
+
+    Args:
+        rate (float, optional): Maximum fraction of width/height that can be
+            removed from each side.  Defaults to ``0.2``.
+    """
+
     def __init__(self, rate=0.2):
         self.rate = rate
 
     def __call__(self, img):
+        """Apply the random proportional crop.
+
+        Args:
+            img (PIL.Image.Image): Input RGB image.
+
+        Returns:
+            PIL.Image.Image: Cropped image with random borders removed.
+        """
         img_ = np.array(img).copy()
         h, w, c = img_.shape
         random_width = int(np.random.random()*self.rate*w)
@@ -140,15 +233,24 @@ class RandomCrop(object):
 
 
 class RandomErasing(object):
-    """ Randomly selects a rectangle region in an image and erases its pixels.
-        'Random Erasing Data Augmentation' by Zhong et al.
-        See https://arxiv.org/pdf/1708.04896.pdf
+    """Randomly selects a rectangle region in an image and erases its pixels.
+
+    Implements the *Random Erasing Data Augmentation* technique described in:
+    Zhong et al., "Random Erasing Data Augmentation", AAAI 2020.
+    See https://arxiv.org/pdf/1708.04896.pdf.
+
+    The erased pixels are filled with the per-channel mean of the image,
+    which empirically outperforms filling with a fixed constant.
+
     Args:
-         probability: The probability that the Random Erasing operation will be performed.
-         sl: Minimum proportion of erased area against input image.
-         sh: Maximum proportion of erased area against input image.
-         r1: Minimum aspect ratio of erased area.
-         mean: Erasing value. 
+        probability (float): Probability that the erasing operation is
+            applied to a given image.  Defaults to ``0.5``.
+        sl (float): Minimum proportion of the erased area relative to the
+            full image area.  Defaults to ``0.02``.
+        sh (float): Maximum proportion of the erased area relative to the
+            full image area.  Defaults to ``0.3``.
+        r1 (float): Minimum aspect ratio of the erased region; the maximum
+            is ``1 / r1``.  Defaults to ``0.3``.
     """
 
     def __init__(self, probability=0.5, sl=0.02, sh=0.3, r1=0.3):
@@ -158,6 +260,23 @@ class RandomErasing(object):
         self.r1 = r1
 
     def __call__(self, img):
+        """Apply random erasing to a PIL image.
+
+        Attempts up to 100 times to find a rectangle whose area and aspect
+        ratio fall within the specified ranges.  If a valid rectangle is
+        found the region is filled with the per-channel image mean and the
+        modified image is returned.  If no valid rectangle is found within
+        100 attempts the original image is returned unchanged.
+
+        Args:
+            img (PIL.Image.Image): Input RGB image (may be a ``torch.Tensor``
+                if used after ``ToTensor``; operates on numpy arrays
+                internally).
+
+        Returns:
+            PIL.Image.Image: Image with one erased rectangle, or the original
+            image if erasing was skipped or no valid region was found.
+        """
         if random.uniform(0, 1) > self.probability:
             return img
 

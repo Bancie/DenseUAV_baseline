@@ -3,41 +3,55 @@ from torch import nn
 
 
 def normalize(x, axis=-1):
-    """Normalizing to unit length along the specified dimension.
+    """Normalise a tensor to unit length along the specified axis.
+
     Args:
-      x: pytorch Variable
+        x (torch.Tensor): Input tensor of arbitrary shape.
+        axis (int, optional): Dimension along which to normalise.
+            Defaults to ``-1`` (last dimension).
+
     Returns:
-      x: pytorch Variable, same shape as input
+        torch.Tensor: L2-normalised tensor of the same shape as ``x``.
     """
     x = 1. * x / (torch.norm(x, 2, axis, keepdim=True).expand_as(x) + 1e-6)
     return x
 
 
 def euclidean_dist(x, y):
-    """
+    """Compute the pairwise Euclidean distance matrix between two sets of vectors.
+
     Args:
-      x: pytorch Variable, with shape [m, d]
-      y: pytorch Variable, with shape [n, d]
+        x (torch.Tensor): Feature matrix of shape ``[m, d]``.
+        y (torch.Tensor): Feature matrix of shape ``[n, d]``.
+
     Returns:
-      dist: pytorch Variable, with shape [m, n]
+        torch.Tensor: Distance matrix of shape ``[m, n]`` where entry
+        ``[i, j]`` is the Euclidean distance between ``x[i]`` and ``y[j]``.
+        Values are clamped to ``1e-6`` before taking the square root for
+        numerical stability.
     """
     m, n = x.size(0), y.size(0)
     xx = torch.pow(x, 2).sum(1, keepdim=True).expand(m, n)
     yy = torch.pow(y, 2).sum(1, keepdim=True).expand(n, m).t()
     dist = xx + yy
     dist = dist - 2 * torch.matmul(x, y.t())
-    # dist.addmm_(1, -2, x, y.t())
     dist = dist.clamp(min=1e-6).sqrt()  # for numerical stability
     return dist
 
 
 def cosine_dist(x, y):
-    """
+    """Compute the pairwise cosine distance matrix between two sets of vectors.
+
+    The cosine distance is defined as ``(1 - cosine_similarity) / 2``, so
+    it lies in ``[0, 1]``.
+
     Args:
-      x: pytorch Variable, with shape [m, d]
-      y: pytorch Variable, with shape [n, d]
+        x (torch.Tensor): Feature matrix of shape ``[m, d]``.
+        y (torch.Tensor): Feature matrix of shape ``[n, d]``.
+
     Returns:
-      dist: pytorch Variable, with shape [m, n]
+        torch.Tensor: Distance matrix of shape ``[m, n]`` where entry
+        ``[i, j]`` is the cosine distance between ``x[i]`` and ``y[j]``.
     """
     m, n = x.size(0), y.size(0)
     x_norm = torch.pow(x, 2).sum(1, keepdim=True).sqrt().expand(m, n)
@@ -49,20 +63,34 @@ def cosine_dist(x, y):
 
 
 def example_mining(dist_mat, labels, return_inds=False):
-    """For each anchor, find the hardest positive and negative sample.
+    """Mine the hardest positive and a mean-distance negative for each anchor.
+
+    For each anchor sample selects the hardest positive (maximum distance
+    among same-class samples) and computes the *mean* distance to all
+    negative (different-class) samples rather than the hardest negative.
+
     Args:
-      dist_mat: pytorch Variable, pair wise distance between samples, shape [N, N]
-      labels: pytorch LongTensor, with shape [N]
-      return_inds: whether to return the indices. Save time if `False`(?)
+        dist_mat (torch.Tensor): Pairwise distance matrix of shape ``[N, N]``.
+        labels (torch.Tensor): Class labels of shape ``[N]``.
+        return_inds (bool, optional): Whether to also return the indices of
+            selected positives and negatives.  Defaults to ``False``.
+
     Returns:
-      dist_ap: pytorch Variable, distance(anchor, positive); shape [N]
-      dist_an: pytorch Variable, distance(anchor, negative); shape [N]
-      p_inds: pytorch LongTensor, with shape [N];
-        indices of selected hard positive samples; 0 <= p_inds[i] <= N - 1
-      n_inds: pytorch LongTensor, with shape [N];
-        indices of selected hard negative samples; 0 <= n_inds[i] <= N - 1
-    NOTE: Only consider the case in which all labels have same num of samples,
-      thus we can cope with all anchors in parallel.
+        tuple:
+            * **dist_ap** (torch.Tensor): Distances to hardest positives,
+              shape ``[N]``.
+            * **dist_an** (torch.Tensor): Mean distances to negatives,
+              shape ``[N]``.
+            * **p_inds** (torch.Tensor, optional): Indices of selected hard
+              positives, shape ``[N]``.  Only returned when
+              ``return_inds=True``.
+            * **n_inds** (torch.Tensor, optional): Indices of selected hard
+              negatives, shape ``[N]``.  Only returned when
+              ``return_inds=True``.
+
+    Note:
+        Only considers the case where all classes have the same number of
+        samples, allowing all anchors to be processed in parallel.
     """
 
     assert len(dist_mat.size()) == 2
@@ -77,7 +105,6 @@ def example_mining(dist_mat, labels, return_inds=False):
     # both `dist_ap` and `relative_p_inds` with shape [N, 1]
     dist_ap, _ = torch.max(
         dist_mat[is_pos].contiguous().view(N, -1), 1, keepdim=True)
-    # print(dist_mat[is_pos].shape)
     # `dist_an` means distance(anchor, negative)
     # both `dist_an` and `relative_n_inds` with shape [N, 1]
     dist_an = torch.mean(
@@ -105,20 +132,34 @@ def example_mining(dist_mat, labels, return_inds=False):
 
 
 def hard_example_mining(dist_mat, labels, return_inds=False):
-    """For each anchor, find the hardest positive and negative sample.
+    """Mine the hardest positive and hardest negative for each anchor.
+
+    For each anchor selects the hardest positive (maximum distance among
+    same-class samples) and the hardest negative (minimum distance among
+    different-class samples).
+
     Args:
-      dist_mat: pytorch Variable, pair wise distance between samples, shape [N, N]
-      labels: pytorch LongTensor, with shape [N]
-      return_inds: whether to return the indices. Save time if `False`(?)
+        dist_mat (torch.Tensor): Pairwise distance matrix of shape ``[N, N]``.
+        labels (torch.Tensor): Class labels of shape ``[N]``.
+        return_inds (bool, optional): Whether to also return the indices of
+            the selected hard positives and negatives.  Defaults to ``False``.
+
     Returns:
-      dist_ap: pytorch Variable, distance(anchor, positive); shape [N]
-      dist_an: pytorch Variable, distance(anchor, negative); shape [N]
-      p_inds: pytorch LongTensor, with shape [N];
-        indices of selected hard positive samples; 0 <= p_inds[i] <= N - 1
-      n_inds: pytorch LongTensor, with shape [N];
-        indices of selected hard negative samples; 0 <= n_inds[i] <= N - 1
-    NOTE: Only consider the case in which all labels have same num of samples,
-      thus we can cope with all anchors in parallel.
+        tuple:
+            * **dist_ap** (torch.Tensor): Distances to hardest positives,
+              shape ``[N]``.
+            * **dist_an** (torch.Tensor): Distances to hardest negatives,
+              shape ``[N]``.
+            * **p_inds** (torch.Tensor, optional): Global indices of selected
+              hard positives, shape ``[N]``.  Only returned when
+              ``return_inds=True``.
+            * **n_inds** (torch.Tensor, optional): Global indices of selected
+              hard negatives, shape ``[N]``.  Only returned when
+              ``return_inds=True``.
+
+    Note:
+        Only considers the case where all classes have the same number of
+        samples, allowing all anchors to be processed in parallel.
     """
 
     assert len(dist_mat.size()) == 2
@@ -133,7 +174,6 @@ def hard_example_mining(dist_mat, labels, return_inds=False):
     # both `dist_ap` and `relative_p_inds` with shape [N, 1]
     dist_ap, relative_p_inds = torch.max(
         dist_mat[is_pos].contiguous().view(N, -1), 1, keepdim=True)
-    # print(dist_mat[is_pos].shape)
     # `dist_an` means distance(anchor, negative)
     # both `dist_an` and `relative_n_inds` with shape [N, 1]
     dist_an, relative_n_inds = torch.min(
@@ -161,9 +201,22 @@ def hard_example_mining(dist_mat, labels, return_inds=False):
 
 
 class HardMiningTripletLoss(object):
-    """
-    Triplet loss using HARDER example mining,
-    modified based on original triplet loss using hard example mining
+    """Triplet loss using *harder* example mining.
+
+    Extends the standard hard-mining triplet loss by scaling the
+    anchor-positive and anchor-negative distances by ``(1 + hard_factor)``
+    and ``(1 - hard_factor)`` respectively, making the positives appear
+    farther and the negatives appear closer before computing the margin
+    ranking loss.
+
+    Args:
+        margin (float | None): Margin for ``nn.MarginRankingLoss``.  When
+            ``None``, ``nn.SoftMarginLoss`` is used instead.
+        hard_factor (float, optional): Scaling offset applied to distances
+            before the ranking loss.  ``0.0`` recovers standard hard mining.
+            Defaults to ``0.0``.
+        normalize_feature (bool, optional): Whether to L2-normalise feature
+            embeddings before computing distances.  Defaults to ``False``.
     """
 
     def __init__(self, margin=None, hard_factor=0.0, normalize_feature=False):
@@ -176,6 +229,17 @@ class HardMiningTripletLoss(object):
             self.ranking_loss = nn.SoftMarginLoss()
 
     def __call__(self, global_feat, labels):
+        """Compute the harder-mining triplet loss.
+
+        Args:
+            global_feat (torch.Tensor): Feature matrix of shape
+                ``(batch_size, feat_dim)``.
+            labels (torch.Tensor): Ground-truth class indices of shape
+                ``(batch_size,)``.
+
+        Returns:
+            torch.Tensor: Scalar triplet loss value.
+        """
         if self.normalize_feature:
             global_feat = normalize(global_feat, axis=-1)
         dist_mat = euclidean_dist(global_feat, global_feat)
@@ -193,9 +257,19 @@ class HardMiningTripletLoss(object):
 
 
 class TripletLoss(object):
-    """
-    Triplet loss without HARDER example mining,
-    modified based on original triplet loss using hard example mining
+    """Triplet loss using mean-negative example mining.
+
+    Similar to ``HardMiningTripletLoss`` but uses ``example_mining`` which
+    selects the hardest positive and the *mean* negative distance rather than
+    the hardest negative, resulting in a smoother gradient signal.
+
+    Args:
+        margin (float | None): Margin for ``nn.MarginRankingLoss``.  When
+            ``None``, ``nn.SoftMarginLoss`` is used instead.
+        hard_factor (float, optional): Distance scaling offset.
+            Defaults to ``0.0``.
+        normalize_feature (bool, optional): Whether to L2-normalise features
+            before computing distances.  Defaults to ``False``.
     """
 
     def __init__(self, margin=None, hard_factor=0.0, normalize_feature=False):
@@ -208,6 +282,17 @@ class TripletLoss(object):
             self.ranking_loss = nn.SoftMarginLoss()
 
     def __call__(self, global_feat, labels):
+        """Compute the mean-negative triplet loss.
+
+        Args:
+            global_feat (torch.Tensor): Feature matrix of shape
+                ``(batch_size, feat_dim)``.
+            labels (torch.Tensor): Ground-truth class indices of shape
+                ``(batch_size,)``.
+
+        Returns:
+            torch.Tensor: Scalar triplet loss value.
+        """
         if self.normalize_feature:
             global_feat = normalize(global_feat, axis=-1)
         dist_mat = euclidean_dist(global_feat, global_feat)
@@ -225,82 +310,112 @@ class TripletLoss(object):
 
 
 class Tripletloss(nn.Module):
-    """Triplet loss with hard positive/negative mining.
+    """Cross-view triplet loss with hard positive/negative mining.
+
+    Mines hard positives and negatives *across views* only: for a sample in
+    the first half of the batch (satellite) the positive and negative are
+    drawn from the second half (drone) and vice versa.  This enforces
+    cross-view discriminability rather than within-view discriminability.
 
     Reference:
-    Hermans et al. In Defense of the Triplet Loss for Person Re-Identification. arXiv:1703.07737.
+        Hermans et al. *In Defense of the Triplet Loss for Person
+        Re-Identification*. arXiv:1703.07737.
 
-    Code imported from https://github.com/Cysu/open-reid/blob/master/reid/loss/triplet.py.
+    Code imported from
+    https://github.com/Cysu/open-reid/blob/master/reid/loss/triplet.py.
 
     Args:
-        margin (float): margin for triplet.
+        margin (float, optional): Margin for ``nn.MarginRankingLoss``.
+            Defaults to ``0.3``.
     """
+
     def __init__(self, margin=0.3):
         super(Tripletloss, self).__init__()
         self.margin = margin
-        self.ranking_loss = nn.MarginRankingLoss(margin=margin)  # pytorch的Triplet loss 需要输入ap an margin 和 倍率y，
-                                                                 # 最后算Relu(ap - y*an + margin)  ap是正样本间距，an是负样本间距
+        # MarginRankingLoss computes ReLU(ap - y*an + margin);
+        # ap is the anchor-positive distance, an is the anchor-negative distance.
+        self.ranking_loss = nn.MarginRankingLoss(margin=margin)
 
     def forward(self, inputs, targets):
-        """
+        """Compute the cross-view triplet loss.
+
+        The input batch is assumed to be arranged as
+        ``[satellite_samples | drone_samples]`` of equal size.  Hard positives
+        and negatives are mined from the *opposite* half for each sample.
+
         Args:
-            inputs: feature matrix with shape (batch_size, feat_dim)
-            targets: ground truth labels with shape (num_classes)
+            inputs (torch.Tensor): Feature matrix of shape
+                ``(batch_size, feat_dim)`` where ``batch_size`` is even.
+            targets (torch.Tensor): Ground-truth class indices of shape
+                ``(batch_size,)``.
+
+        Returns:
+            torch.Tensor: Scalar triplet loss value.
         """
 
         n = inputs.size(0)
 
-        # 分别norm
-        # inputs_1 = normalize(inputs[:int(n/2)], axis=-1)
-        # inputs_2 = normalize(inputs[int(n/2):n],axis=-1)
-        # inputs = torch.cat((inputs_1,inputs_2),dim=0)
-        # 一起norm
-        inputs = normalize(inputs,axis=-1)
-        dist =euclidean_dist(inputs,inputs)
-        # For each anchor, find the hardest positive and negative
+        inputs = normalize(inputs, axis=-1)
+        dist = euclidean_dist(inputs, inputs)
+        # For each anchor, find the hardest positive and negative in the opposite view
         mask = targets.expand(n, n).eq(targets.expand(n, n).t())
         dist_ap, dist_an = [], []
         for i in range(n):
             if i < n/2:
-                dist_ap.append(dist[i][int(n/2):n][mask[i][int(n/2):n]].max().unsqueeze(0))  # dist[i][mask[i]].max()得到的tensor没有维度，需要加unsqueeze(0)得到一维向量
+                dist_ap.append(dist[i][int(n/2):n][mask[i][int(n/2):n]].max().unsqueeze(0))
                 dist_an.append(dist[i][int(n/2):n][(mask[i] == 0)[int(n/2):n]].min().unsqueeze(0))
             else:
-                dist_ap.append(dist[i][0:int(n/2)][mask[i][0:int(n/2)]].max().unsqueeze(0))  # dist[i][mask[i]].max()得到的tensor没有维度，需要加unsqueeze(0)得到一维向量
+                dist_ap.append(dist[i][0:int(n/2)][mask[i][0:int(n/2)]].max().unsqueeze(0))
                 dist_an.append(dist[i][0:int(n/2)][(mask[i] == 0)[0:int(n/2)]].min().unsqueeze(0))
-        dist_ap = torch.cat(dist_ap)  # ap最难样本dist
-        dist_an = torch.cat(dist_an)  # an最难样本dist
-        # Compute ranking hinge loss
+        dist_ap = torch.cat(dist_ap)
+        dist_an = torch.cat(dist_an)
         y = torch.ones_like(dist_an)
 
-        # loss = torch.nn.functional.relu(y*-1*(dist_an-dist_ap)+0.3).mean()
-
-        loss = self.ranking_loss(dist_an, dist_ap, y)  # margin在__init__中设置过了
+        loss = self.ranking_loss(dist_an, dist_ap, y)
         return loss
 
 
 class WeightedSoftTripletLoss(nn.Module):
-    # writed by dmmm
+    """Soft triplet loss with log-sum-exp weighting.
+
+    Computes a smooth triplet loss using the formula:
+
+    .. math::
+
+        \\mathcal{L} = \\frac{1}{N}\\sum_{i=1}^{N}
+        \\log\\!\\left(1 + e^{\\alpha(d_{ap,i} - d_{an,i})}\\right)
+
+    where ``α`` (``self.alpha``) is a temperature parameter that controls
+    the sharpness of the soft-max weighting.  Hard example mining is used to
+    select ``d_ap`` and ``d_an`` before applying the smooth loss, combining
+    the benefits of hard mining with a differentiable, margin-free objective.
+
+    Args:
+        None.  The temperature parameter ``alpha`` is fixed at ``10``.
+    """
+
     def __init__(self):
         super(WeightedSoftTripletLoss, self).__init__()
         self.alpha = 10
 
     def forward(self, inputs, targets):
-        """
+        """Compute the weighted soft triplet loss.
+
         Args:
-            inputs: feature matrix with shape (batch_size, feat_dim)
-            targets: ground truth labels with shape (num_classes)
+            inputs (torch.Tensor): Feature matrix of shape
+                ``(batch_size, feat_dim)``.
+            targets (torch.Tensor): Ground-truth class indices of shape
+                ``(batch_size,)``.
+
+        Returns:
+            torch.Tensor: Scalar loss value.
         """
 
         n = inputs.size(0)
 
-        inputs = normalize(inputs,axis=-1)
+        inputs = normalize(inputs, axis=-1)
 
-        dist =euclidean_dist(inputs,inputs)
+        dist = euclidean_dist(inputs, inputs)
         dist_ap, dist_an = hard_example_mining(dist, targets)
-        # ap_ = torch.sum(torch.exp(dist_ap)/torch.sum(torch.exp(dist_ap))*dist_ap)
-        # an_ = torch.sum(torch.exp(-dist_an)/torch.sum(torch.exp(-dist_an))*dist_an)
         loss = torch.log(1+torch.exp(self.alpha*(dist_ap-dist_an))).mean()
         return loss
-
-
-
