@@ -1,0 +1,480 @@
+[2023-03-17 20:16:49,476][INFO] Epoch 0/119
+[2023-03-17 20:16:49,476][INFO] --------------------------------------------------
+[2023-03-17 20:17:02,869][INFO] Loss: 16.1642 Cls_Loss:15.4705 KL_Loss:0.0115 Triplet_Loss 0.6828 Satellite_Acc: 0.0000  Drone_Acc: 0.0000 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:17:02,869][INFO] Training complete in 0m 13s
+[2023-03-17 20:17:02,869][INFO] Epoch 1/119
+[2023-03-17 20:17:02,869][INFO] --------------------------------------------------
+[2023-03-17 20:17:16,224][INFO] Loss: 14.6062 Cls_Loss:14.0854 KL_Loss:0.0477 Triplet_Loss 0.4737 Satellite_Acc: 0.0080  Drone_Acc: 0.0160 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:17:16,224][INFO] Training complete in 0m 13s
+[2023-03-17 20:17:16,224][INFO] Epoch 2/119
+[2023-03-17 20:17:16,224][INFO] --------------------------------------------------
+[2023-03-17 20:17:29,643][INFO] Loss: 12.9261 Cls_Loss:12.4326 KL_Loss:0.1084 Triplet_Loss 0.3854 Satellite_Acc: 0.0129  Drone_Acc: 0.0257 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:17:29,643][INFO] Training complete in 0m 13s
+[2023-03-17 20:17:29,643][INFO] Epoch 3/119
+[2023-03-17 20:17:29,643][INFO] --------------------------------------------------
+[2023-03-17 20:17:43,034][INFO] Loss: 11.2845 Cls_Loss:10.7767 KL_Loss:0.1830 Triplet_Loss 0.3252 Satellite_Acc: 0.0332  Drone_Acc: 0.0581 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:17:43,034][INFO] Training complete in 0m 13s
+[2023-03-17 20:17:43,034][INFO] Epoch 4/119
+[2023-03-17 20:17:43,034][INFO] --------------------------------------------------
+[2023-03-17 20:17:56,418][INFO] Loss: 9.8509 Cls_Loss:9.2858 KL_Loss:0.2739 Triplet_Loss 0.2916 Satellite_Acc: 0.0665  Drone_Acc: 0.0949 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:17:56,418][INFO] Training complete in 0m 13s
+[2023-03-17 20:17:56,418][INFO] Epoch 5/119
+[2023-03-17 20:17:56,418][INFO] --------------------------------------------------
+[2023-03-17 20:18:09,885][INFO] Loss: 8.6764 Cls_Loss:8.0287 KL_Loss:0.3742 Triplet_Loss 0.2734 Satellite_Acc: 0.0824  Drone_Acc: 0.1423 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:18:09,885][INFO] Training complete in 0m 13s
+[2023-03-17 20:18:09,886][INFO] Epoch 6/119
+[2023-03-17 20:18:09,886][INFO] --------------------------------------------------
+[2023-03-17 20:18:23,219][INFO] Loss: 7.5701 Cls_Loss:6.8694 KL_Loss:0.4534 Triplet_Loss 0.2474 Satellite_Acc: 0.1365  Drone_Acc: 0.2207 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:18:23,219][INFO] Training complete in 0m 13s
+[2023-03-17 20:18:23,219][INFO] Epoch 7/119
+[2023-03-17 20:18:23,219][INFO] --------------------------------------------------
+[2023-03-17 20:18:36,706][INFO] Loss: 6.7899 Cls_Loss:6.0153 KL_Loss:0.5351 Triplet_Loss 0.2394 Satellite_Acc: 0.1941  Drone_Acc: 0.2744 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:18:36,706][INFO] Training complete in 0m 13s
+[2023-03-17 20:18:36,706][INFO] Epoch 8/119
+[2023-03-17 20:18:36,706][INFO] --------------------------------------------------
+[2023-03-17 20:18:50,037][INFO] Loss: 6.0472 Cls_Loss:5.2256 KL_Loss:0.5960 Triplet_Loss 0.2256 Satellite_Acc: 0.2323  Drone_Acc: 0.3475 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:18:50,037][INFO] Training complete in 0m 13s
+[2023-03-17 20:18:50,037][INFO] Epoch 9/119
+[2023-03-17 20:18:50,037][INFO] --------------------------------------------------
+[2023-03-17 20:19:03,418][INFO] Loss: 5.4851 Cls_Loss:4.6115 KL_Loss:0.6473 Triplet_Loss 0.2262 Satellite_Acc: 0.2948  Drone_Acc: 0.4291 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:19:03,419][INFO] Training complete in 0m 13s
+[2023-03-17 20:19:03,419][INFO] Epoch 10/119
+[2023-03-17 20:19:03,419][INFO] --------------------------------------------------
+[2023-03-17 20:19:16,813][INFO] Loss: 5.0887 Cls_Loss:4.1595 KL_Loss:0.7102 Triplet_Loss 0.2191 Satellite_Acc: 0.3409  Drone_Acc: 0.5027 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:19:16,813][INFO] Training complete in 0m 13s
+[2023-03-17 20:19:16,814][INFO] Epoch 11/119
+[2023-03-17 20:19:16,814][INFO] --------------------------------------------------
+[2023-03-17 20:19:30,171][INFO] Loss: 4.6440 Cls_Loss:3.7071 KL_Loss:0.7187 Triplet_Loss 0.2184 Satellite_Acc: 0.3958  Drone_Acc: 0.5545 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:19:30,171][INFO] Training complete in 0m 13s
+[2023-03-17 20:19:30,171][INFO] Epoch 12/119
+[2023-03-17 20:19:30,171][INFO] --------------------------------------------------
+[2023-03-17 20:19:43,550][INFO] Loss: 4.3426 Cls_Loss:3.3606 KL_Loss:0.7648 Triplet_Loss 0.2171 Satellite_Acc: 0.4459  Drone_Acc: 0.5966 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:19:43,551][INFO] Training complete in 0m 13s
+[2023-03-17 20:19:43,551][INFO] Epoch 13/119
+[2023-03-17 20:19:43,551][INFO] --------------------------------------------------
+[2023-03-17 20:19:56,882][INFO] Loss: 4.0115 Cls_Loss:3.0322 KL_Loss:0.7755 Triplet_Loss 0.2037 Satellite_Acc: 0.4832  Drone_Acc: 0.6334 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:19:56,882][INFO] Training complete in 0m 13s
+[2023-03-17 20:19:56,882][INFO] Epoch 14/119
+[2023-03-17 20:19:56,883][INFO] --------------------------------------------------
+[2023-03-17 20:20:10,313][INFO] Loss: 3.8635 Cls_Loss:2.8367 KL_Loss:0.8096 Triplet_Loss 0.2171 Satellite_Acc: 0.5009  Drone_Acc: 0.6760 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:20:10,313][INFO] Training complete in 0m 13s
+[2023-03-17 20:20:10,313][INFO] Epoch 15/119
+[2023-03-17 20:20:10,313][INFO] --------------------------------------------------
+[2023-03-17 20:20:23,744][INFO] Loss: 3.5835 Cls_Loss:2.5543 KL_Loss:0.8119 Triplet_Loss 0.2172 Satellite_Acc: 0.5621  Drone_Acc: 0.7252 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:20:23,744][INFO] Training complete in 0m 13s
+[2023-03-17 20:20:23,744][INFO] Epoch 16/119
+[2023-03-17 20:20:23,744][INFO] --------------------------------------------------
+[2023-03-17 20:20:37,213][INFO] Loss: 3.2923 Cls_Loss:2.3105 KL_Loss:0.7758 Triplet_Loss 0.2059 Satellite_Acc: 0.5926  Drone_Acc: 0.7469 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:20:37,214][INFO] Training complete in 0m 13s
+[2023-03-17 20:20:37,214][INFO] Epoch 17/119
+[2023-03-17 20:20:37,214][INFO] --------------------------------------------------
+[2023-03-17 20:20:50,621][INFO] Loss: 3.1159 Cls_Loss:2.1249 KL_Loss:0.7788 Triplet_Loss 0.2123 Satellite_Acc: 0.6330  Drone_Acc: 0.7824 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:20:50,621][INFO] Training complete in 0m 13s
+[2023-03-17 20:20:50,621][INFO] Epoch 18/119
+[2023-03-17 20:20:50,621][INFO] --------------------------------------------------
+[2023-03-17 20:21:04,037][INFO] Loss: 2.9657 Cls_Loss:1.9823 KL_Loss:0.7747 Triplet_Loss 0.2086 Satellite_Acc: 0.6565  Drone_Acc: 0.8125 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:21:04,038][INFO] Training complete in 0m 13s
+[2023-03-17 20:21:04,038][INFO] Epoch 19/119
+[2023-03-17 20:21:04,038][INFO] --------------------------------------------------
+[2023-03-17 20:21:17,398][INFO] Loss: 2.7706 Cls_Loss:1.7900 KL_Loss:0.7752 Triplet_Loss 0.2054 Satellite_Acc: 0.6933  Drone_Acc: 0.8347 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:21:17,398][INFO] Training complete in 0m 13s
+[2023-03-17 20:21:17,398][INFO] Epoch 20/119
+[2023-03-17 20:21:17,398][INFO] --------------------------------------------------
+[2023-03-17 20:21:30,788][INFO] Loss: 2.7155 Cls_Loss:1.7289 KL_Loss:0.7782 Triplet_Loss 0.2083 Satellite_Acc: 0.7035  Drone_Acc: 0.8307 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:21:30,788][INFO] Training complete in 0m 13s
+[2023-03-17 20:21:30,788][INFO] Epoch 21/119
+[2023-03-17 20:21:30,788][INFO] --------------------------------------------------
+[2023-03-17 20:21:44,144][INFO] Loss: 2.6168 Cls_Loss:1.6157 KL_Loss:0.7898 Triplet_Loss 0.2114 Satellite_Acc: 0.7243  Drone_Acc: 0.8506 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:21:44,144][INFO] Training complete in 0m 13s
+[2023-03-17 20:21:44,144][INFO] Epoch 22/119
+[2023-03-17 20:21:44,144][INFO] --------------------------------------------------
+[2023-03-17 20:21:57,506][INFO] Loss: 2.4966 Cls_Loss:1.5272 KL_Loss:0.7617 Triplet_Loss 0.2077 Satellite_Acc: 0.7402  Drone_Acc: 0.8555 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:21:57,506][INFO] Training complete in 0m 13s
+[2023-03-17 20:21:57,506][INFO] Epoch 23/119
+[2023-03-17 20:21:57,506][INFO] --------------------------------------------------
+[2023-03-17 20:22:10,926][INFO] Loss: 2.3925 Cls_Loss:1.4355 KL_Loss:0.7442 Triplet_Loss 0.2127 Satellite_Acc: 0.7438  Drone_Acc: 0.8759 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:22:10,926][INFO] Training complete in 0m 13s
+[2023-03-17 20:22:10,927][INFO] Epoch 24/119
+[2023-03-17 20:22:10,927][INFO] --------------------------------------------------
+[2023-03-17 20:22:24,432][INFO] Loss: 2.1687 Cls_Loss:1.2790 KL_Loss:0.6883 Triplet_Loss 0.2014 Satellite_Acc: 0.7762  Drone_Acc: 0.8781 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:22:24,432][INFO] Training complete in 0m 14s
+[2023-03-17 20:22:24,432][INFO] Epoch 25/119
+[2023-03-17 20:22:24,432][INFO] --------------------------------------------------
+[2023-03-17 20:22:37,776][INFO] Loss: 2.1895 Cls_Loss:1.2726 KL_Loss:0.7059 Triplet_Loss 0.2111 Satellite_Acc: 0.7779  Drone_Acc: 0.8883 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:22:37,776][INFO] Training complete in 0m 13s
+[2023-03-17 20:22:37,776][INFO] Epoch 26/119
+[2023-03-17 20:22:37,776][INFO] --------------------------------------------------
+[2023-03-17 20:22:51,286][INFO] Loss: 2.0961 Cls_Loss:1.1902 KL_Loss:0.7006 Triplet_Loss 0.2053 Satellite_Acc: 0.7930  Drone_Acc: 0.9012 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:22:51,286][INFO] Training complete in 0m 14s
+[2023-03-17 20:22:51,286][INFO] Epoch 27/119
+[2023-03-17 20:22:51,286][INFO] --------------------------------------------------
+[2023-03-17 20:23:04,751][INFO] Loss: 1.9885 Cls_Loss:1.1304 KL_Loss:0.6595 Triplet_Loss 0.1987 Satellite_Acc: 0.8019  Drone_Acc: 0.8967 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:23:04,751][INFO] Training complete in 0m 13s
+[2023-03-17 20:23:04,751][INFO] Epoch 28/119
+[2023-03-17 20:23:04,751][INFO] --------------------------------------------------
+[2023-03-17 20:23:18,175][INFO] Loss: 2.0294 Cls_Loss:1.1132 KL_Loss:0.7012 Triplet_Loss 0.2150 Satellite_Acc: 0.8001  Drone_Acc: 0.9012 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:23:18,175][INFO] Training complete in 0m 13s
+[2023-03-17 20:23:18,175][INFO] Epoch 29/119
+[2023-03-17 20:23:18,175][INFO] --------------------------------------------------
+[2023-03-17 20:23:31,586][INFO] Loss: 1.9843 Cls_Loss:1.0765 KL_Loss:0.6969 Triplet_Loss 0.2109 Satellite_Acc: 0.8107  Drone_Acc: 0.9043 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:23:31,586][INFO] Training complete in 0m 13s
+[2023-03-17 20:23:31,586][INFO] Epoch 30/119
+[2023-03-17 20:23:31,586][INFO] --------------------------------------------------
+[2023-03-17 20:23:45,168][INFO] Loss: 1.8664 Cls_Loss:1.0013 KL_Loss:0.6544 Triplet_Loss 0.2106 Satellite_Acc: 0.8338  Drone_Acc: 0.9149 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:23:45,168][INFO] Training complete in 0m 14s
+[2023-03-17 20:23:45,168][INFO] Epoch 31/119
+[2023-03-17 20:23:45,168][INFO] --------------------------------------------------
+[2023-03-17 20:23:58,660][INFO] Loss: 1.8671 Cls_Loss:0.9844 KL_Loss:0.6744 Triplet_Loss 0.2083 Satellite_Acc: 0.8258  Drone_Acc: 0.9326 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:23:58,660][INFO] Training complete in 0m 13s
+[2023-03-17 20:23:58,660][INFO] Epoch 32/119
+[2023-03-17 20:23:58,660][INFO] --------------------------------------------------
+[2023-03-17 20:24:12,096][INFO] Loss: 1.7622 Cls_Loss:0.9239 KL_Loss:0.6330 Triplet_Loss 0.2053 Satellite_Acc: 0.8435  Drone_Acc: 0.9211 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:24:12,096][INFO] Training complete in 0m 13s
+[2023-03-17 20:24:12,096][INFO] Epoch 33/119
+[2023-03-17 20:24:12,096][INFO] --------------------------------------------------
+[2023-03-17 20:24:25,437][INFO] Loss: 1.8215 Cls_Loss:0.9640 KL_Loss:0.6559 Triplet_Loss 0.2016 Satellite_Acc: 0.8333  Drone_Acc: 0.9198 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:24:25,437][INFO] Training complete in 0m 13s
+[2023-03-17 20:24:25,437][INFO] Epoch 34/119
+[2023-03-17 20:24:25,437][INFO] --------------------------------------------------
+[2023-03-17 20:24:38,874][INFO] Loss: 1.6900 Cls_Loss:0.8672 KL_Loss:0.6206 Triplet_Loss 0.2022 Satellite_Acc: 0.8444  Drone_Acc: 0.9264 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:24:38,874][INFO] Training complete in 0m 13s
+[2023-03-17 20:24:38,874][INFO] Epoch 35/119
+[2023-03-17 20:24:38,874][INFO] --------------------------------------------------
+[2023-03-17 20:24:52,155][INFO] Loss: 1.6704 Cls_Loss:0.8475 KL_Loss:0.6238 Triplet_Loss 0.1992 Satellite_Acc: 0.8542  Drone_Acc: 0.9317 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:24:52,155][INFO] Training complete in 0m 13s
+[2023-03-17 20:24:52,155][INFO] Epoch 36/119
+[2023-03-17 20:24:52,155][INFO] --------------------------------------------------
+[2023-03-17 20:25:05,550][INFO] Loss: 1.6409 Cls_Loss:0.8310 KL_Loss:0.6054 Triplet_Loss 0.2045 Satellite_Acc: 0.8449  Drone_Acc: 0.9375 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:25:05,551][INFO] Training complete in 0m 13s
+[2023-03-17 20:25:05,551][INFO] Epoch 37/119
+[2023-03-17 20:25:05,551][INFO] --------------------------------------------------
+[2023-03-17 20:25:18,884][INFO] Loss: 1.6068 Cls_Loss:0.8051 KL_Loss:0.6000 Triplet_Loss 0.2016 Satellite_Acc: 0.8621  Drone_Acc: 0.9441 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:25:18,885][INFO] Training complete in 0m 13s
+[2023-03-17 20:25:18,885][INFO] Epoch 38/119
+[2023-03-17 20:25:18,885][INFO] --------------------------------------------------
+[2023-03-17 20:25:32,380][INFO] Loss: 1.5280 Cls_Loss:0.7542 KL_Loss:0.5741 Triplet_Loss 0.1998 Satellite_Acc: 0.8679  Drone_Acc: 0.9393 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:25:32,381][INFO] Training complete in 0m 13s
+[2023-03-17 20:25:32,381][INFO] Epoch 39/119
+[2023-03-17 20:25:32,381][INFO] --------------------------------------------------
+[2023-03-17 20:25:45,780][INFO] Loss: 1.5489 Cls_Loss:0.7633 KL_Loss:0.5874 Triplet_Loss 0.1983 Satellite_Acc: 0.8684  Drone_Acc: 0.9415 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:25:45,780][INFO] Training complete in 0m 13s
+[2023-03-17 20:25:45,780][INFO] Epoch 40/119
+[2023-03-17 20:25:45,780][INFO] --------------------------------------------------
+[2023-03-17 20:25:59,269][INFO] Loss: 1.4657 Cls_Loss:0.7117 KL_Loss:0.5546 Triplet_Loss 0.1994 Satellite_Acc: 0.8821  Drone_Acc: 0.9473 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:25:59,269][INFO] Training complete in 0m 13s
+[2023-03-17 20:25:59,269][INFO] Epoch 41/119
+[2023-03-17 20:25:59,269][INFO] --------------------------------------------------
+[2023-03-17 20:26:12,764][INFO] Loss: 1.4164 Cls_Loss:0.6815 KL_Loss:0.5373 Triplet_Loss 0.1976 Satellite_Acc: 0.8808  Drone_Acc: 0.9512 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:26:12,764][INFO] Training complete in 0m 13s
+[2023-03-17 20:26:12,764][INFO] Epoch 42/119
+[2023-03-17 20:26:12,764][INFO] --------------------------------------------------
+[2023-03-17 20:26:26,099][INFO] Loss: 1.4096 Cls_Loss:0.6716 KL_Loss:0.5434 Triplet_Loss 0.1946 Satellite_Acc: 0.8785  Drone_Acc: 0.9517 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:26:26,099][INFO] Training complete in 0m 13s
+[2023-03-17 20:26:26,099][INFO] Epoch 43/119
+[2023-03-17 20:26:26,099][INFO] --------------------------------------------------
+[2023-03-17 20:26:39,520][INFO] Loss: 1.3430 Cls_Loss:0.6300 KL_Loss:0.5192 Triplet_Loss 0.1938 Satellite_Acc: 0.8852  Drone_Acc: 0.9583 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:26:39,520][INFO] Training complete in 0m 13s
+[2023-03-17 20:26:39,520][INFO] Epoch 44/119
+[2023-03-17 20:26:39,520][INFO] --------------------------------------------------
+[2023-03-17 20:26:52,833][INFO] Loss: 1.3444 Cls_Loss:0.6297 KL_Loss:0.5202 Triplet_Loss 0.1946 Satellite_Acc: 0.8896  Drone_Acc: 0.9543 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:26:52,833][INFO] Training complete in 0m 13s
+[2023-03-17 20:26:52,833][INFO] Epoch 45/119
+[2023-03-17 20:26:52,833][INFO] --------------------------------------------------
+[2023-03-17 20:27:06,349][INFO] Loss: 1.3216 Cls_Loss:0.6239 KL_Loss:0.5100 Triplet_Loss 0.1877 Satellite_Acc: 0.8941  Drone_Acc: 0.9526 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:27:06,349][INFO] Training complete in 0m 14s
+[2023-03-17 20:27:06,349][INFO] Epoch 46/119
+[2023-03-17 20:27:06,349][INFO] --------------------------------------------------
+[2023-03-17 20:27:19,809][INFO] Loss: 1.3642 Cls_Loss:0.6379 KL_Loss:0.5284 Triplet_Loss 0.1978 Satellite_Acc: 0.8914  Drone_Acc: 0.9574 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:27:19,810][INFO] Training complete in 0m 13s
+[2023-03-17 20:27:19,810][INFO] Epoch 47/119
+[2023-03-17 20:27:19,810][INFO] --------------------------------------------------
+[2023-03-17 20:27:33,217][INFO] Loss: 1.3397 Cls_Loss:0.6203 KL_Loss:0.5199 Triplet_Loss 0.1994 Satellite_Acc: 0.8892  Drone_Acc: 0.9574 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:27:33,217][INFO] Training complete in 0m 13s
+[2023-03-17 20:27:33,218][INFO] Epoch 48/119
+[2023-03-17 20:27:33,218][INFO] --------------------------------------------------
+[2023-03-17 20:27:46,717][INFO] Loss: 1.3565 Cls_Loss:0.6362 KL_Loss:0.5260 Triplet_Loss 0.1943 Satellite_Acc: 0.8892  Drone_Acc: 0.9477 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:27:46,718][INFO] Training complete in 0m 14s
+[2023-03-17 20:27:46,718][INFO] Epoch 49/119
+[2023-03-17 20:27:46,718][INFO] --------------------------------------------------
+[2023-03-17 20:28:00,298][INFO] Loss: 1.2297 Cls_Loss:0.5562 KL_Loss:0.4869 Triplet_Loss 0.1865 Satellite_Acc: 0.9087  Drone_Acc: 0.9566 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:28:00,298][INFO] Training complete in 0m 14s
+[2023-03-17 20:28:00,298][INFO] Epoch 50/119
+[2023-03-17 20:28:00,298][INFO] --------------------------------------------------
+[2023-03-17 20:28:13,711][INFO] Loss: 1.2507 Cls_Loss:0.5771 KL_Loss:0.4876 Triplet_Loss 0.1861 Satellite_Acc: 0.8994  Drone_Acc: 0.9619 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:28:13,711][INFO] Training complete in 0m 13s
+[2023-03-17 20:28:13,711][INFO] Epoch 51/119
+[2023-03-17 20:28:13,711][INFO] --------------------------------------------------
+[2023-03-17 20:28:27,128][INFO] Loss: 1.2167 Cls_Loss:0.5425 KL_Loss:0.4880 Triplet_Loss 0.1862 Satellite_Acc: 0.9091  Drone_Acc: 0.9637 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:28:27,128][INFO] Training complete in 0m 13s
+[2023-03-17 20:28:27,128][INFO] Epoch 52/119
+[2023-03-17 20:28:27,128][INFO] --------------------------------------------------
+[2023-03-17 20:28:40,470][INFO] Loss: 1.2312 Cls_Loss:0.5637 KL_Loss:0.4793 Triplet_Loss 0.1882 Satellite_Acc: 0.9047  Drone_Acc: 0.9579 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:28:40,471][INFO] Training complete in 0m 13s
+[2023-03-17 20:28:40,471][INFO] Epoch 53/119
+[2023-03-17 20:28:40,471][INFO] --------------------------------------------------
+[2023-03-17 20:28:53,854][INFO] Loss: 1.1551 Cls_Loss:0.5073 KL_Loss:0.4600 Triplet_Loss 0.1878 Satellite_Acc: 0.9131  Drone_Acc: 0.9637 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:28:53,854][INFO] Training complete in 0m 13s
+[2023-03-17 20:28:53,854][INFO] Epoch 54/119
+[2023-03-17 20:28:53,854][INFO] --------------------------------------------------
+[2023-03-17 20:29:07,372][INFO] Loss: 1.1211 Cls_Loss:0.5011 KL_Loss:0.4387 Triplet_Loss 0.1813 Satellite_Acc: 0.9207  Drone_Acc: 0.9614 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:29:07,373][INFO] Training complete in 0m 14s
+[2023-03-17 20:29:07,373][INFO] Epoch 55/119
+[2023-03-17 20:29:07,373][INFO] --------------------------------------------------
+[2023-03-17 20:29:20,913][INFO] Loss: 1.1336 Cls_Loss:0.5060 KL_Loss:0.4395 Triplet_Loss 0.1882 Satellite_Acc: 0.9105  Drone_Acc: 0.9712 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:29:20,913][INFO] Training complete in 0m 14s
+[2023-03-17 20:29:20,913][INFO] Epoch 56/119
+[2023-03-17 20:29:20,913][INFO] --------------------------------------------------
+[2023-03-17 20:29:34,257][INFO] Loss: 1.1212 Cls_Loss:0.4919 KL_Loss:0.4434 Triplet_Loss 0.1860 Satellite_Acc: 0.9158  Drone_Acc: 0.9641 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:29:34,257][INFO] Training complete in 0m 13s
+[2023-03-17 20:29:34,257][INFO] Epoch 57/119
+[2023-03-17 20:29:34,257][INFO] --------------------------------------------------
+[2023-03-17 20:29:47,709][INFO] Loss: 1.0994 Cls_Loss:0.4855 KL_Loss:0.4327 Triplet_Loss 0.1813 Satellite_Acc: 0.9264  Drone_Acc: 0.9641 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:29:47,710][INFO] Training complete in 0m 13s
+[2023-03-17 20:29:47,710][INFO] Epoch 58/119
+[2023-03-17 20:29:47,710][INFO] --------------------------------------------------
+[2023-03-17 20:30:01,138][INFO] Loss: 1.0258 Cls_Loss:0.4379 KL_Loss:0.4031 Triplet_Loss 0.1848 Satellite_Acc: 0.9264  Drone_Acc: 0.9747 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:30:01,138][INFO] Training complete in 0m 13s
+[2023-03-17 20:30:01,138][INFO] Epoch 59/119
+[2023-03-17 20:30:01,138][INFO] --------------------------------------------------
+[2023-03-17 20:30:14,605][INFO] Loss: 1.0607 Cls_Loss:0.4645 KL_Loss:0.4121 Triplet_Loss 0.1842 Satellite_Acc: 0.9220  Drone_Acc: 0.9699 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:30:14,605][INFO] Training complete in 0m 13s
+[2023-03-17 20:30:14,605][INFO] Epoch 60/119
+[2023-03-17 20:30:14,605][INFO] --------------------------------------------------
+[2023-03-17 20:30:27,963][INFO] Loss: 1.0855 Cls_Loss:0.4785 KL_Loss:0.4247 Triplet_Loss 0.1822 Satellite_Acc: 0.9162  Drone_Acc: 0.9637 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:30:27,963][INFO] Training complete in 0m 13s
+[2023-03-17 20:30:27,963][INFO] Epoch 61/119
+[2023-03-17 20:30:27,963][INFO] --------------------------------------------------
+[2023-03-17 20:30:41,427][INFO] Loss: 1.0499 Cls_Loss:0.4591 KL_Loss:0.4100 Triplet_Loss 0.1808 Satellite_Acc: 0.9149  Drone_Acc: 0.9721 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:30:41,428][INFO] Training complete in 0m 13s
+[2023-03-17 20:30:41,428][INFO] Epoch 62/119
+[2023-03-17 20:30:41,428][INFO] --------------------------------------------------
+[2023-03-17 20:30:55,008][INFO] Loss: 1.0626 Cls_Loss:0.4565 KL_Loss:0.4227 Triplet_Loss 0.1834 Satellite_Acc: 0.9215  Drone_Acc: 0.9681 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:30:55,009][INFO] Training complete in 0m 14s
+[2023-03-17 20:30:55,009][INFO] Epoch 63/119
+[2023-03-17 20:30:55,009][INFO] --------------------------------------------------
+[2023-03-17 20:31:08,496][INFO] Loss: 1.1304 Cls_Loss:0.4980 KL_Loss:0.4436 Triplet_Loss 0.1889 Satellite_Acc: 0.9082  Drone_Acc: 0.9681 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:31:08,496][INFO] Training complete in 0m 13s
+[2023-03-17 20:31:08,496][INFO] Epoch 64/119
+[2023-03-17 20:31:08,496][INFO] --------------------------------------------------
+[2023-03-17 20:31:21,998][INFO] Loss: 1.0112 Cls_Loss:0.4378 KL_Loss:0.3916 Triplet_Loss 0.1817 Satellite_Acc: 0.9224  Drone_Acc: 0.9743 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:31:21,998][INFO] Training complete in 0m 14s
+[2023-03-17 20:31:21,998][INFO] Epoch 65/119
+[2023-03-17 20:31:21,998][INFO] --------------------------------------------------
+[2023-03-17 20:31:35,286][INFO] Loss: 1.0304 Cls_Loss:0.4362 KL_Loss:0.4136 Triplet_Loss 0.1805 Satellite_Acc: 0.9238  Drone_Acc: 0.9725 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:31:35,286][INFO] Training complete in 0m 13s
+[2023-03-17 20:31:35,286][INFO] Epoch 66/119
+[2023-03-17 20:31:35,286][INFO] --------------------------------------------------
+[2023-03-17 20:31:48,704][INFO] Loss: 1.0913 Cls_Loss:0.4707 KL_Loss:0.4337 Triplet_Loss 0.1869 Satellite_Acc: 0.9176  Drone_Acc: 0.9676 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:31:48,704][INFO] Training complete in 0m 13s
+[2023-03-17 20:31:48,704][INFO] Epoch 67/119
+[2023-03-17 20:31:48,704][INFO] --------------------------------------------------
+[2023-03-17 20:32:02,162][INFO] Loss: 0.9417 Cls_Loss:0.3857 KL_Loss:0.3760 Triplet_Loss 0.1800 Satellite_Acc: 0.9357  Drone_Acc: 0.9783 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:32:02,162][INFO] Training complete in 0m 13s
+[2023-03-17 20:32:02,162][INFO] Epoch 68/119
+[2023-03-17 20:32:02,162][INFO] --------------------------------------------------
+[2023-03-17 20:32:15,602][INFO] Loss: 0.9763 Cls_Loss:0.4092 KL_Loss:0.3897 Triplet_Loss 0.1775 Satellite_Acc: 0.9309  Drone_Acc: 0.9707 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:32:15,602][INFO] Training complete in 0m 13s
+[2023-03-17 20:32:15,602][INFO] Epoch 69/119
+[2023-03-17 20:32:15,602][INFO] --------------------------------------------------
+[2023-03-17 20:32:29,147][INFO] Loss: 0.9518 Cls_Loss:0.3923 KL_Loss:0.3823 Triplet_Loss 0.1773 Satellite_Acc: 0.9309  Drone_Acc: 0.9716 lr_backbone:0.000900 lr_other 0.003000
+[2023-03-17 20:32:29,147][INFO] Training complete in 0m 14s
+[2023-03-17 20:32:29,147][INFO] Epoch 70/119
+[2023-03-17 20:32:29,147][INFO] --------------------------------------------------
+[2023-03-17 20:32:42,616][INFO] Loss: 0.7676 Cls_Loss:0.2927 KL_Loss:0.3038 Triplet_Loss 0.1711 Satellite_Acc: 0.9499  Drone_Acc: 0.9889 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:32:42,616][INFO] Training complete in 0m 13s
+[2023-03-17 20:32:42,616][INFO] Epoch 71/119
+[2023-03-17 20:32:42,616][INFO] --------------------------------------------------
+[2023-03-17 20:32:56,076][INFO] Loss: 0.7111 Cls_Loss:0.2685 KL_Loss:0.2773 Triplet_Loss 0.1654 Satellite_Acc: 0.9583  Drone_Acc: 0.9889 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:32:56,076][INFO] Training complete in 0m 13s
+[2023-03-17 20:32:56,076][INFO] Epoch 72/119
+[2023-03-17 20:32:56,076][INFO] --------------------------------------------------
+[2023-03-17 20:33:09,405][INFO] Loss: 0.7161 Cls_Loss:0.2759 KL_Loss:0.2782 Triplet_Loss 0.1620 Satellite_Acc: 0.9481  Drone_Acc: 0.9894 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:33:09,406][INFO] Training complete in 0m 13s
+[2023-03-17 20:33:09,406][INFO] Epoch 73/119
+[2023-03-17 20:33:09,406][INFO] --------------------------------------------------
+[2023-03-17 20:33:22,867][INFO] Loss: 0.6362 Cls_Loss:0.2316 KL_Loss:0.2483 Triplet_Loss 0.1562 Satellite_Acc: 0.9650  Drone_Acc: 0.9885 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:33:22,867][INFO] Training complete in 0m 13s
+[2023-03-17 20:33:22,867][INFO] Epoch 74/119
+[2023-03-17 20:33:22,867][INFO] --------------------------------------------------
+[2023-03-17 20:33:36,208][INFO] Loss: 0.5906 Cls_Loss:0.2141 KL_Loss:0.2215 Triplet_Loss 0.1549 Satellite_Acc: 0.9738  Drone_Acc: 0.9902 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:33:36,208][INFO] Training complete in 0m 13s
+[2023-03-17 20:33:36,208][INFO] Epoch 75/119
+[2023-03-17 20:33:36,208][INFO] --------------------------------------------------
+[2023-03-17 20:33:49,703][INFO] Loss: 0.6214 Cls_Loss:0.2284 KL_Loss:0.2362 Triplet_Loss 0.1567 Satellite_Acc: 0.9654  Drone_Acc: 0.9925 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:33:49,704][INFO] Training complete in 0m 13s
+[2023-03-17 20:33:49,704][INFO] Epoch 76/119
+[2023-03-17 20:33:49,704][INFO] --------------------------------------------------
+[2023-03-17 20:34:03,048][INFO] Loss: 0.5955 Cls_Loss:0.2167 KL_Loss:0.2274 Triplet_Loss 0.1514 Satellite_Acc: 0.9645  Drone_Acc: 0.9925 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:34:03,048][INFO] Training complete in 0m 13s
+[2023-03-17 20:34:03,048][INFO] Epoch 77/119
+[2023-03-17 20:34:03,048][INFO] --------------------------------------------------
+[2023-03-17 20:34:16,423][INFO] Loss: 0.6045 Cls_Loss:0.2166 KL_Loss:0.2336 Triplet_Loss 0.1543 Satellite_Acc: 0.9681  Drone_Acc: 0.9942 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:34:16,423][INFO] Training complete in 0m 13s
+[2023-03-17 20:34:16,423][INFO] Epoch 78/119
+[2023-03-17 20:34:16,424][INFO] --------------------------------------------------
+[2023-03-17 20:34:29,863][INFO] Loss: 0.5767 Cls_Loss:0.2071 KL_Loss:0.2179 Triplet_Loss 0.1518 Satellite_Acc: 0.9668  Drone_Acc: 0.9934 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:34:29,864][INFO] Training complete in 0m 13s
+[2023-03-17 20:34:29,864][INFO] Epoch 79/119
+[2023-03-17 20:34:29,864][INFO] --------------------------------------------------
+[2023-03-17 20:34:43,252][INFO] Loss: 0.5928 Cls_Loss:0.2111 KL_Loss:0.2274 Triplet_Loss 0.1542 Satellite_Acc: 0.9699  Drone_Acc: 0.9911 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:34:43,252][INFO] Training complete in 0m 13s
+[2023-03-17 20:34:43,252][INFO] Epoch 80/119
+[2023-03-17 20:34:43,252][INFO] --------------------------------------------------
+[2023-03-17 20:34:56,601][INFO] Loss: 0.5567 Cls_Loss:0.1952 KL_Loss:0.2101 Triplet_Loss 0.1514 Satellite_Acc: 0.9725  Drone_Acc: 0.9907 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:34:56,601][INFO] Training complete in 0m 13s
+[2023-03-17 20:34:56,601][INFO] Epoch 81/119
+[2023-03-17 20:34:56,601][INFO] --------------------------------------------------
+[2023-03-17 20:35:09,971][INFO] Loss: 0.5715 Cls_Loss:0.2000 KL_Loss:0.2209 Triplet_Loss 0.1505 Satellite_Acc: 0.9712  Drone_Acc: 0.9907 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:35:09,971][INFO] Training complete in 0m 13s
+[2023-03-17 20:35:09,971][INFO] Epoch 82/119
+[2023-03-17 20:35:09,971][INFO] --------------------------------------------------
+[2023-03-17 20:35:23,476][INFO] Loss: 0.5674 Cls_Loss:0.1941 KL_Loss:0.2238 Triplet_Loss 0.1495 Satellite_Acc: 0.9752  Drone_Acc: 0.9911 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:35:23,476][INFO] Training complete in 0m 14s
+[2023-03-17 20:35:23,476][INFO] Epoch 83/119
+[2023-03-17 20:35:23,476][INFO] --------------------------------------------------
+[2023-03-17 20:35:36,846][INFO] Loss: 0.5569 Cls_Loss:0.1987 KL_Loss:0.2058 Triplet_Loss 0.1523 Satellite_Acc: 0.9676  Drone_Acc: 0.9934 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:35:36,846][INFO] Training complete in 0m 13s
+[2023-03-17 20:35:36,847][INFO] Epoch 84/119
+[2023-03-17 20:35:36,847][INFO] --------------------------------------------------
+[2023-03-17 20:35:50,145][INFO] Loss: 0.5420 Cls_Loss:0.1882 KL_Loss:0.2019 Triplet_Loss 0.1519 Satellite_Acc: 0.9770  Drone_Acc: 0.9885 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:35:50,145][INFO] Training complete in 0m 13s
+[2023-03-17 20:35:50,145][INFO] Epoch 85/119
+[2023-03-17 20:35:50,145][INFO] --------------------------------------------------
+[2023-03-17 20:36:03,483][INFO] Loss: 0.5381 Cls_Loss:0.1868 KL_Loss:0.2035 Triplet_Loss 0.1479 Satellite_Acc: 0.9738  Drone_Acc: 0.9938 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:36:03,484][INFO] Training complete in 0m 13s
+[2023-03-17 20:36:03,484][INFO] Epoch 86/119
+[2023-03-17 20:36:03,484][INFO] --------------------------------------------------
+[2023-03-17 20:36:16,936][INFO] Loss: 0.5180 Cls_Loss:0.1726 KL_Loss:0.1947 Triplet_Loss 0.1506 Satellite_Acc: 0.9756  Drone_Acc: 0.9938 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:36:16,937][INFO] Training complete in 0m 13s
+[2023-03-17 20:36:16,937][INFO] Epoch 87/119
+[2023-03-17 20:36:16,937][INFO] --------------------------------------------------
+[2023-03-17 20:36:30,488][INFO] Loss: 0.5111 Cls_Loss:0.1739 KL_Loss:0.1925 Triplet_Loss 0.1447 Satellite_Acc: 0.9770  Drone_Acc: 0.9920 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:36:30,488][INFO] Training complete in 0m 14s
+[2023-03-17 20:36:30,488][INFO] Epoch 88/119
+[2023-03-17 20:36:30,488][INFO] --------------------------------------------------
+[2023-03-17 20:36:44,071][INFO] Loss: 0.5059 Cls_Loss:0.1741 KL_Loss:0.1889 Triplet_Loss 0.1430 Satellite_Acc: 0.9738  Drone_Acc: 0.9920 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:36:44,072][INFO] Training complete in 0m 14s
+[2023-03-17 20:36:44,072][INFO] Epoch 89/119
+[2023-03-17 20:36:44,072][INFO] --------------------------------------------------
+[2023-03-17 20:36:57,354][INFO] Loss: 0.5333 Cls_Loss:0.1831 KL_Loss:0.2037 Triplet_Loss 0.1465 Satellite_Acc: 0.9787  Drone_Acc: 0.9911 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:36:57,355][INFO] Training complete in 0m 13s
+[2023-03-17 20:36:57,355][INFO] Epoch 90/119
+[2023-03-17 20:36:57,355][INFO] --------------------------------------------------
+[2023-03-17 20:37:10,787][INFO] Loss: 0.4866 Cls_Loss:0.1657 KL_Loss:0.1757 Triplet_Loss 0.1453 Satellite_Acc: 0.9743  Drone_Acc: 0.9947 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:37:10,787][INFO] Training complete in 0m 13s
+[2023-03-17 20:37:10,787][INFO] Epoch 91/119
+[2023-03-17 20:37:10,787][INFO] --------------------------------------------------
+[2023-03-17 20:37:24,238][INFO] Loss: 0.4865 Cls_Loss:0.1700 KL_Loss:0.1743 Triplet_Loss 0.1422 Satellite_Acc: 0.9743  Drone_Acc: 0.9925 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:37:24,238][INFO] Training complete in 0m 13s
+[2023-03-17 20:37:24,238][INFO] Epoch 92/119
+[2023-03-17 20:37:24,239][INFO] --------------------------------------------------
+[2023-03-17 20:37:37,628][INFO] Loss: 0.5648 Cls_Loss:0.1984 KL_Loss:0.2176 Triplet_Loss 0.1488 Satellite_Acc: 0.9690  Drone_Acc: 0.9938 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:37:37,628][INFO] Training complete in 0m 13s
+[2023-03-17 20:37:37,628][INFO] Epoch 93/119
+[2023-03-17 20:37:37,628][INFO] --------------------------------------------------
+[2023-03-17 20:37:50,985][INFO] Loss: 0.5008 Cls_Loss:0.1766 KL_Loss:0.1777 Triplet_Loss 0.1465 Satellite_Acc: 0.9685  Drone_Acc: 0.9947 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:37:50,985][INFO] Training complete in 0m 13s
+[2023-03-17 20:37:50,985][INFO] Epoch 94/119
+[2023-03-17 20:37:50,985][INFO] --------------------------------------------------
+[2023-03-17 20:38:04,378][INFO] Loss: 0.5053 Cls_Loss:0.1714 KL_Loss:0.1857 Triplet_Loss 0.1482 Satellite_Acc: 0.9756  Drone_Acc: 0.9942 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:38:04,378][INFO] Training complete in 0m 13s
+[2023-03-17 20:38:04,378][INFO] Epoch 95/119
+[2023-03-17 20:38:04,378][INFO] --------------------------------------------------
+[2023-03-17 20:38:17,887][INFO] Loss: 0.5434 Cls_Loss:0.1883 KL_Loss:0.2069 Triplet_Loss 0.1482 Satellite_Acc: 0.9725  Drone_Acc: 0.9916 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:38:17,887][INFO] Training complete in 0m 14s
+[2023-03-17 20:38:17,887][INFO] Epoch 96/119
+[2023-03-17 20:38:17,887][INFO] --------------------------------------------------
+[2023-03-17 20:38:31,279][INFO] Loss: 0.5094 Cls_Loss:0.1743 KL_Loss:0.1889 Triplet_Loss 0.1461 Satellite_Acc: 0.9761  Drone_Acc: 0.9929 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:38:31,280][INFO] Training complete in 0m 13s
+[2023-03-17 20:38:31,280][INFO] Epoch 97/119
+[2023-03-17 20:38:31,280][INFO] --------------------------------------------------
+[2023-03-17 20:38:44,671][INFO] Loss: 0.5483 Cls_Loss:0.1916 KL_Loss:0.2097 Triplet_Loss 0.1470 Satellite_Acc: 0.9668  Drone_Acc: 0.9942 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:38:44,671][INFO] Training complete in 0m 13s
+[2023-03-17 20:38:44,671][INFO] Epoch 98/119
+[2023-03-17 20:38:44,671][INFO] --------------------------------------------------
+[2023-03-17 20:38:58,178][INFO] Loss: 0.5037 Cls_Loss:0.1744 KL_Loss:0.1869 Triplet_Loss 0.1425 Satellite_Acc: 0.9770  Drone_Acc: 0.9938 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:38:58,179][INFO] Training complete in 0m 14s
+[2023-03-17 20:38:58,179][INFO] Epoch 99/119
+[2023-03-17 20:38:58,179][INFO] --------------------------------------------------
+[2023-03-17 20:39:11,696][INFO] Loss: 0.5132 Cls_Loss:0.1782 KL_Loss:0.1927 Triplet_Loss 0.1423 Satellite_Acc: 0.9734  Drone_Acc: 0.9916 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:39:11,697][INFO] Training complete in 0m 14s
+[2023-03-17 20:39:11,697][INFO] Epoch 100/119
+[2023-03-17 20:39:11,697][INFO] --------------------------------------------------
+[2023-03-17 20:39:25,090][INFO] Loss: 0.4888 Cls_Loss:0.1670 KL_Loss:0.1790 Triplet_Loss 0.1428 Satellite_Acc: 0.9783  Drone_Acc: 0.9947 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:39:25,090][INFO] Training complete in 0m 13s
+[2023-03-17 20:39:25,090][INFO] Epoch 101/119
+[2023-03-17 20:39:25,090][INFO] --------------------------------------------------
+[2023-03-17 20:39:38,564][INFO] Loss: 0.4885 Cls_Loss:0.1674 KL_Loss:0.1819 Triplet_Loss 0.1392 Satellite_Acc: 0.9725  Drone_Acc: 0.9973 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:39:38,564][INFO] Training complete in 0m 13s
+[2023-03-17 20:39:38,564][INFO] Epoch 102/119
+[2023-03-17 20:39:38,564][INFO] --------------------------------------------------
+[2023-03-17 20:39:52,006][INFO] Loss: 0.4917 Cls_Loss:0.1654 KL_Loss:0.1788 Triplet_Loss 0.1475 Satellite_Acc: 0.9752  Drone_Acc: 0.9920 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:39:52,006][INFO] Training complete in 0m 13s
+[2023-03-17 20:39:52,007][INFO] Epoch 103/119
+[2023-03-17 20:39:52,007][INFO] --------------------------------------------------
+[2023-03-17 20:40:05,432][INFO] Loss: 0.4777 Cls_Loss:0.1580 KL_Loss:0.1759 Triplet_Loss 0.1438 Satellite_Acc: 0.9774  Drone_Acc: 0.9960 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:40:05,433][INFO] Training complete in 0m 13s
+[2023-03-17 20:40:05,433][INFO] Epoch 104/119
+[2023-03-17 20:40:05,433][INFO] --------------------------------------------------
+[2023-03-17 20:40:18,886][INFO] Loss: 0.4687 Cls_Loss:0.1559 KL_Loss:0.1691 Triplet_Loss 0.1438 Satellite_Acc: 0.9787  Drone_Acc: 0.9934 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:40:18,887][INFO] Training complete in 0m 13s
+[2023-03-17 20:40:18,887][INFO] Epoch 105/119
+[2023-03-17 20:40:18,887][INFO] --------------------------------------------------
+[2023-03-17 20:40:32,262][INFO] Loss: 0.4811 Cls_Loss:0.1573 KL_Loss:0.1815 Triplet_Loss 0.1422 Satellite_Acc: 0.9770  Drone_Acc: 0.9965 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:40:32,262][INFO] Training complete in 0m 13s
+[2023-03-17 20:40:32,262][INFO] Epoch 106/119
+[2023-03-17 20:40:32,262][INFO] --------------------------------------------------
+[2023-03-17 20:40:45,744][INFO] Loss: 0.4699 Cls_Loss:0.1591 KL_Loss:0.1695 Triplet_Loss 0.1412 Satellite_Acc: 0.9761  Drone_Acc: 0.9960 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:40:45,744][INFO] Training complete in 0m 13s
+[2023-03-17 20:40:45,744][INFO] Epoch 107/119
+[2023-03-17 20:40:45,744][INFO] --------------------------------------------------
+[2023-03-17 20:40:59,122][INFO] Loss: 0.4691 Cls_Loss:0.1564 KL_Loss:0.1719 Triplet_Loss 0.1407 Satellite_Acc: 0.9796  Drone_Acc: 0.9929 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:40:59,122][INFO] Training complete in 0m 13s
+[2023-03-17 20:40:59,122][INFO] Epoch 108/119
+[2023-03-17 20:40:59,122][INFO] --------------------------------------------------
+[2023-03-17 20:41:12,649][INFO] Loss: 0.4608 Cls_Loss:0.1513 KL_Loss:0.1686 Triplet_Loss 0.1410 Satellite_Acc: 0.9818  Drone_Acc: 0.9947 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:41:12,650][INFO] Training complete in 0m 14s
+[2023-03-17 20:41:12,650][INFO] Epoch 109/119
+[2023-03-17 20:41:12,650][INFO] --------------------------------------------------
+[2023-03-17 20:41:26,075][INFO] Loss: 0.4800 Cls_Loss:0.1569 KL_Loss:0.1812 Triplet_Loss 0.1419 Satellite_Acc: 0.9796  Drone_Acc: 0.9951 lr_backbone:0.000090 lr_other 0.000300
+[2023-03-17 20:41:26,075][INFO] Training complete in 0m 13s
+[2023-03-17 20:41:26,075][INFO] Epoch 110/119
+[2023-03-17 20:41:26,075][INFO] --------------------------------------------------
+[2023-03-17 20:41:39,492][INFO] Loss: 0.4632 Cls_Loss:0.1604 KL_Loss:0.1635 Triplet_Loss 0.1393 Satellite_Acc: 0.9752  Drone_Acc: 0.9956 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:41:39,493][INFO] Training complete in 0m 13s
+[2023-03-17 20:41:39,493][INFO] Epoch 111/119
+[2023-03-17 20:41:39,493][INFO] --------------------------------------------------
+[2023-03-17 20:41:52,990][INFO] Loss: 0.4530 Cls_Loss:0.1529 KL_Loss:0.1619 Triplet_Loss 0.1381 Satellite_Acc: 0.9778  Drone_Acc: 0.9942 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:41:52,991][INFO] Training complete in 0m 13s
+[2023-03-17 20:41:52,991][INFO] Epoch 112/119
+[2023-03-17 20:41:52,991][INFO] --------------------------------------------------
+[2023-03-17 20:42:06,436][INFO] Loss: 0.4385 Cls_Loss:0.1456 KL_Loss:0.1531 Triplet_Loss 0.1398 Satellite_Acc: 0.9787  Drone_Acc: 0.9938 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:42:06,436][INFO] Training complete in 0m 13s
+[2023-03-17 20:42:06,436][INFO] Epoch 113/119
+[2023-03-17 20:42:06,436][INFO] --------------------------------------------------
+[2023-03-17 20:42:19,878][INFO] Loss: 0.4532 Cls_Loss:0.1508 KL_Loss:0.1634 Triplet_Loss 0.1390 Satellite_Acc: 0.9756  Drone_Acc: 0.9956 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:42:19,878][INFO] Training complete in 0m 13s
+[2023-03-17 20:42:19,878][INFO] Epoch 114/119
+[2023-03-17 20:42:19,878][INFO] --------------------------------------------------
+[2023-03-17 20:42:33,396][INFO] Loss: 0.4851 Cls_Loss:0.1681 KL_Loss:0.1765 Triplet_Loss 0.1405 Satellite_Acc: 0.9716  Drone_Acc: 0.9973 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:42:33,396][INFO] Training complete in 0m 14s
+[2023-03-17 20:42:33,396][INFO] Epoch 115/119
+[2023-03-17 20:42:33,396][INFO] --------------------------------------------------
+[2023-03-17 20:42:46,937][INFO] Loss: 0.4539 Cls_Loss:0.1506 KL_Loss:0.1654 Triplet_Loss 0.1379 Satellite_Acc: 0.9805  Drone_Acc: 0.9947 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:42:46,937][INFO] Training complete in 0m 14s
+[2023-03-17 20:42:46,937][INFO] Epoch 116/119
+[2023-03-17 20:42:46,937][INFO] --------------------------------------------------
+[2023-03-17 20:43:00,475][INFO] Loss: 0.4691 Cls_Loss:0.1563 KL_Loss:0.1736 Triplet_Loss 0.1392 Satellite_Acc: 0.9761  Drone_Acc: 0.9929 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:43:00,475][INFO] Training complete in 0m 14s
+[2023-03-17 20:43:00,475][INFO] Epoch 117/119
+[2023-03-17 20:43:00,475][INFO] --------------------------------------------------
+[2023-03-17 20:43:13,935][INFO] Loss: 0.4435 Cls_Loss:0.1480 KL_Loss:0.1578 Triplet_Loss 0.1377 Satellite_Acc: 0.9787  Drone_Acc: 0.9969 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:43:13,935][INFO] Training complete in 0m 13s
+[2023-03-17 20:43:13,935][INFO] Epoch 118/119
+[2023-03-17 20:43:13,935][INFO] --------------------------------------------------
+[2023-03-17 20:43:27,304][INFO] Loss: 0.4936 Cls_Loss:0.1694 KL_Loss:0.1825 Triplet_Loss 0.1417 Satellite_Acc: 0.9716  Drone_Acc: 0.9969 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:43:27,304][INFO] Training complete in 0m 13s
+[2023-03-17 20:43:27,304][INFO] Epoch 119/119
+[2023-03-17 20:43:27,304][INFO] --------------------------------------------------
+[2023-03-17 20:43:40,902][INFO] Loss: 0.4430 Cls_Loss:0.1429 KL_Loss:0.1576 Triplet_Loss 0.1425 Satellite_Acc: 0.9809  Drone_Acc: 0.9951 lr_backbone:0.000009 lr_other 0.000030
+[2023-03-17 20:43:41,037][INFO] Training complete in 0m 14s
