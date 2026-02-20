@@ -1,4 +1,24 @@
 # -*- coding: utf-8 -*-
+"""Training script for the DenseUAV two-view geo-localization model.
+
+This script trains a dual-branch model that jointly learns satellite-view and
+drone-view image representations for UAV geo-localization.  Configuration is
+supplied via CLI flags that are then merged with an ``opts.yaml`` file found in
+the same directory.
+
+Example:
+    Train with default settings on a single GPU::
+
+        python train.py --name my_run --data_dir /path/to/DenseUAV/train \\
+            --backbone ViTS-224 --head GeM --num_epochs 120 --batchsize 8
+
+Outputs:
+    - ``checkpoints/<name>/train.log``     — per-epoch training log.
+    - ``checkpoints/<name>/net_<epoch>.pth`` — model weights saved every 10
+      epochs starting from epoch 110.
+    - ``checkpoints/<name>/opts.yaml``     — serialised configuration snapshot.
+    - A copy of all source files under ``checkpoints/<name>/``.
+"""
 
 from __future__ import print_function, division
 import argparse
@@ -23,6 +43,18 @@ warnings.filterwarnings("ignore")
 
 
 def get_parse():
+    """Parse command-line arguments and return the configuration namespace.
+
+    Defines all training hyper-parameters as CLI flags.  After parsing, the
+    resulting ``argparse.Namespace`` object is printed to stdout so that every
+    run is self-documenting.
+
+    Returns:
+        argparse.Namespace: Parsed options including fields such as
+            ``gpu_ids``, ``name``, ``data_dir``, ``batchsize``, ``lr``,
+            ``backbone``, ``head``, ``num_epochs``, and various augmentation
+            flags.
+    """
     parser = argparse.ArgumentParser(description='Training')
     parser.add_argument('--gpu_ids', default='0', type=str,
                         help='gpu_ids: e.g. 0  0,1,2  0,2')
@@ -70,10 +102,37 @@ def get_parse():
 
 
 def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
+    """Run the full training loop for the dual-branch geo-localization model.
+
+    Iterates over ``opt.num_epochs`` epochs.  Each epoch:
+
+    1. Iterates over paired satellite / drone mini-batches.
+    2. Performs a forward pass under ``torch.cuda.amp.autocast`` (mixed
+       precision) when ``opt.autocast`` is ``True``.
+    3. Computes composite loss: classification loss + triplet loss + KL loss.
+    4. Back-propagates with ``GradScaler`` (AMP) or plain ``loss.backward()``.
+    5. Logs per-epoch statistics to both file and stdout.
+    6. Saves a checkpoint every 10 epochs starting from epoch 110.
+
+    Args:
+        model (torch.nn.Module): The dual-branch model to be trained.
+        opt (argparse.Namespace): Configuration namespace produced by
+            :func:`get_parse`.  Must contain at least ``use_gpu``,
+            ``num_epochs``, ``name``, ``batchsize``, and ``autocast``.
+        optimizer (torch.optim.Optimizer): Optimiser instance (e.g. AdamW or
+            SGD) returned by ``make_optimizer``.
+        scheduler (torch.optim.lr_scheduler._LRScheduler): Learning-rate
+            scheduler stepped once per epoch.
+        dataloaders (torch.utils.data.DataLoader): Paired dataloader that
+            yields ``(data_satellite, data_drone)`` tuples each iteration.
+        dataset_sizes (dict): Mapping from split name to sample count, e.g.
+            ``{'satellite': 54000, 'drone': 54000}``.  Used to normalise
+            running statistics.
+    """
     logger = get_logger(
         "checkpoints/{}/train.log".format(opt.name))
 
-    # thop计算MACs
+    # thop MACs computation (commented out for production runs)
     # macs, params = calc_flops_params(
     #     model, (1, 3, opt.h, opt.w), (1, 3, opt.h, opt.w))
     # logger.info("model MACs={}, Params={}".format(macs, params))
@@ -95,7 +154,7 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
         running_corrects = 0.0
         running_corrects2 = 0.0
         for data, data3 in dataloaders:
-            # 获取输入无人机和卫星数据
+            # Retrieve drone and satellite input batches
             inputs, labels = data
             inputs3, labels3 = data3
             now_batch_size = inputs.shape[0]
@@ -109,19 +168,18 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
             else:
                 inputs, labels = Variable(inputs), Variable(labels)
 
-            # 梯度清零
+            # Zero gradients before forward pass
             optimizer.zero_grad()
 
-            # start_time = time.time()
-            # 模型前向传播
+            # Forward pass with optional mixed-precision context
             with autocast():
                 outputs, outputs2 = model(inputs, inputs3)
-            # print("model_time:{}".format(time.time()-start_time))
-            # 计算损失
+
+            # Compute composite loss
             loss, cls_loss, f_triplet_loss, kl_loss = nnloss(
                 outputs, outputs2, labels, labels3)
-            # start_time = time.time()
-            # 反向传播
+
+            # Backward pass
             if opt.autocast:
                 scaler.scale(loss).backward()
                 scaler.step(optimizer)
@@ -129,15 +187,14 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
             else:
                 loss.backward()
                 optimizer.step()
-            # print("backward_time:{}".format(time.time()-start_time))
 
-            # 统计损失
+            # Accumulate loss statistics
             running_loss += loss.item() * now_batch_size
             running_cls_loss += cls_loss.item()*now_batch_size
             running_triplet += f_triplet_loss.item() * now_batch_size
             running_kl_loss += kl_loss.item() * now_batch_size
 
-            # 统计精度
+            # Accumulate accuracy statistics
             preds, preds2 = get_preds(outputs[0], outputs2[0])
             if isinstance(preds, list) and isinstance(preds2, list):
                 running_corrects += sum([float(torch.sum(pred == labels.data))
@@ -148,7 +205,7 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
                 running_corrects += float(torch.sum(preds == labels.data))
                 running_corrects2 += float(torch.sum(preds2 == labels3.data))
 
-        # 统计损失和精度
+        # Compute epoch-level averages
         epoch_cls_loss = running_cls_loss/dataset_sizes['satellite']
         epoch_kl_loss = running_kl_loss / dataset_sizes['satellite']
         epoch_triplet_loss = running_triplet/dataset_sizes['satellite']
@@ -200,7 +257,7 @@ if __name__ == '__main__':
 
     if use_gpu:
         model = model.cuda()
-    # 移动文件到指定文件夹
+    # Copy source files to checkpoint directory for reproducibility
     copyfiles2checkpoints(opt)
 
     train_model(model, opt, optimizer_ft, exp_lr_scheduler,

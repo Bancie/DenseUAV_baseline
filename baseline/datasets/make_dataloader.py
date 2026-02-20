@@ -6,6 +6,46 @@ from .queryDataset import RotateAndCrop, RandomCrop, RandomErasing
 
 
 def make_dataset(opt):
+    """Build the training DataLoader with view-specific augmentation pipelines.
+
+    Constructs separate augmentation transform lists for drone (UAV) and satellite
+    images based on the flags in ``opt``.  Augmentations are applied selectively
+    per view using ``opt.rr`` (rotate-and-crop), ``opt.ra`` (random affine),
+    ``opt.re`` (random erasing), and ``opt.cj`` (color jitter).  When
+    ``opt.DA`` is ``True``, ImageNet AutoAugment is prepended to the drone
+    pipeline.  All pipelines end with a standard ImageNet normalisation.
+
+    Args:
+        opt: Configuration namespace with the following required attributes:
+
+            * ``data_dir`` (str): Root directory of the dataset.
+            * ``h`` (int): Target image height in pixels.
+            * ``w`` (int): Target image width in pixels.
+            * ``pad`` (int): Edge-padding size applied before random crop.
+            * ``batchsize`` (int): Number of samples per batch.
+            * ``sample_num`` (int): Number of times each class index is
+              repeated per epoch by the sampler.
+            * ``num_worker`` (int): Number of DataLoader worker processes.
+            * ``erasing_p`` (float): Probability for ``RandomErasing``.
+            * ``rr`` (str): Comma-separated view names (``"uav"``,
+              ``"satellite"``) that receive ``RotateAndCrop``.
+            * ``ra`` (str): View names that receive ``RandomAffine(180)``.
+            * ``re`` (str): View names that receive ``RandomErasing``.
+            * ``cj`` (str): View names that receive ``ColorJitter``.
+            * ``DA`` (bool): Whether to apply ImageNet AutoAugment to the
+              drone pipeline.
+
+    Returns:
+        tuple:
+            * **dataloaders** (torch.utils.data.DataLoader): Training
+              DataLoader that yields paired ``([satellite_batch, ids],
+              [drone_batch, ids])`` tuples.
+            * **class_names** (list[str]): Sorted list of geo-location class
+              folder names.
+            * **dataset_sizes** (dict[str, int]): Effective dataset size per
+              view (``len(dataset) * sample_num``) keyed by ``"satellite"``
+              and ``"drone"``.
+    """
     transform_train_list = []
     transform_satellite_list = []
     if "uav" in opt.rr:

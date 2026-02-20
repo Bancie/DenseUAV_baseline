@@ -1,3 +1,11 @@
+"""NetVLAD aggregation head for ViT-family backbones.
+
+NetVLAD (Arandjelovic et al., 2016) aggregates local descriptors into a
+fixed-size representation by computing soft-assigned residuals to a set of
+learned cluster centres.  This module adapts the original formulation to
+operate on patch tokens produced by Vision Transformer backbones.
+"""
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -5,7 +13,33 @@ from .utils import ClassBlock, Pooling, vector2image
 
 
 class NetVLAD(nn.Module):
+    """Top-level NetVLAD head combining token reshaping with VLAD aggregation.
+
+    Patch tokens (excluding the CLS token) are transposed and reshaped into
+    a 2-D spatial grid before being passed to :class:`NetVLAD_block`.  The
+    resulting VLAD descriptor is classified by a :class:`~utils.ClassBlock`.
+
+    Attributes:
+        opt: Option namespace used to build the module.
+        classifier (ClassBlock): Linear bottleneck + BN + classification head
+            operating on the flattened VLAD descriptor.
+        netvlad (NetVLAD_block): Core VLAD aggregation module.
+    """
+
     def __init__(self, opt) -> None:
+        """Initializes the NetVLAD head.
+
+        Args:
+            opt: Argument namespace with at least:
+                - in_planes (int): Feature dimension per patch token.
+                - nclasses (int): Number of identity classes.
+                - droprate (float): Dropout probability.
+                - num_bottleneck (int): Bottleneck projection dimension for
+                  :class:`~utils.ClassBlock`.
+                - block (int): Number of VLAD clusters
+                  (``num_clusters`` in :class:`NetVLAD_block`).  The VLAD
+                  descriptor has dimension ``in_planes * block``.
+        """
         super(NetVLAD, self).__init__()
         self.opt = opt
         self.classifier = ClassBlock(
@@ -14,6 +48,18 @@ class NetVLAD(nn.Module):
             num_clusters=opt.block, dim=opt.in_planes, alpha=100.0, normalize_input=True)
 
     def forward(self, features):
+        """Aggregates patch tokens via VLAD and classifies the result.
+
+        Args:
+            features (torch.Tensor): Token tensor from a ViT backbone with
+                shape ``(N, num_patches + 1, C)``.  The CLS token at index 0
+                is discarded.
+
+        Returns:
+            list[torch.Tensor, torch.Tensor]: ``[cls, feature]`` where *cls*
+            has shape ``(N, num_classes)`` and *feature* has shape
+            ``(N, num_bottleneck)``.
+        """
         local_feature = features[:, 1:]
         local_feature = local_feature.transpose(1, 2)
 
@@ -29,16 +75,17 @@ class NetVLAD_block(nn.Module):
 
     def __init__(self, num_clusters=64, dim=128, alpha=100.0,
                  normalize_input=True):
-        """
+        """Initializes NetVLAD_block with cluster centres and a soft-assignment
+        convolution.
+
         Args:
-            num_clusters : int
-                The number of clusters
-            dim : int
-                Dimension of descriptors
-            alpha : float
-                Parameter of initialization. Larger value is harder assignment.
-            normalize_input : bool
-                If true, descriptor-wise L2 normalization is applied to input.
+            num_clusters (int): Number of VLAD cluster centres *K*.
+            dim (int): Descriptor (channel) dimension *D*.
+            alpha (float): Sharpness parameter for initializing the
+                soft-assignment weights.  Larger values produce harder
+                cluster assignments at initialization.
+            normalize_input (bool): If ``True``, each input descriptor is
+                L2-normalised before computing soft assignments.
         """
         super(NetVLAD_block, self).__init__()
         self.num_clusters = num_clusters
@@ -51,6 +98,14 @@ class NetVLAD_block(nn.Module):
         self._init_params()
 
     def _init_params(self):
+        """Initializes conv weights and biases from the cluster centroids.
+
+        Sets the 1×1 convolution so that its output approximates the
+        soft-assignment score:
+        ``score_k(x) = 2·alpha·c_k^T·x − alpha·||c_k||²``
+        which is derived from the squared Euclidean distance between *x*
+        and centroid *c_k* scaled by *alpha*.
+        """
         self.conv.weight = nn.Parameter(
             (2.0 * self.alpha * self.centroids).unsqueeze(-1).unsqueeze(-1)
         )
@@ -58,7 +113,18 @@ class NetVLAD_block(nn.Module):
             - self.alpha * self.centroids.norm(dim=1)
         )
 
-    def forward(self, x):  # x: (N, C, H, W), H * W对应论文中的N表示局部特征的数目，C对应论文中的D表示特征维度
+    def forward(self, x):
+        """Computes the VLAD descriptor for a batch of local feature maps.
+
+        Args:
+            x (torch.Tensor): Local feature map of shape ``(N, C, H, W)``
+                where ``H * W`` equals the number of local descriptors and
+                ``C`` is the descriptor dimension.
+
+        Returns:
+            torch.Tensor: L2-normalised VLAD descriptor of shape
+            ``(N, num_clusters * C)``.
+        """
         N, C = x.shape[:2]
 
         if self.normalize_input:

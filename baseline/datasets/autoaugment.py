@@ -8,13 +8,24 @@ matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 class ImageNetPolicy(object):
-    """ Randomly choose one of the best 24 Sub-policies on ImageNet.
+    """Randomly choose one of the best 24 Sub-policies on ImageNet.
 
-        Example:
+    Applies the AutoAugment policy found by neural architecture search on
+    ImageNet (Cubuk et al., "AutoAugment: Learning Augmentation Strategies
+    from Data", CVPR 2019).  At each call one of the 24 predefined
+    ``SubPolicy`` objects is selected uniformly at random and applied to the
+    input image.
+
+    Args:
+        fillcolor (tuple[int, int, int], optional): RGB fill colour used for
+            geometric operations that leave empty pixels (e.g. shear,
+            translate).  Defaults to ``(128, 128, 128)``.
+
+    Example:
         >>> policy = ImageNetPolicy()
         >>> transformed = policy(image)
 
-        Example as a PyTorch Transform:
+    Example as a PyTorch Transform:
         >>> transform=transforms.Compose([
         >>>     transforms.Resize(256),
         >>>     ImageNetPolicy(),
@@ -53,8 +64,15 @@ class ImageNetPolicy(object):
             SubPolicy(0.8, "equalize", 8, 0.6, "equalize", 3, fillcolor)
         ]
 
-
     def __call__(self, img):
+        """Apply a randomly selected sub-policy to the image.
+
+        Args:
+            img (PIL.Image.Image): Input image.
+
+        Returns:
+            PIL.Image.Image: Augmented image.
+        """
         policy_idx = random.randint(0, len(self.policies) - 1)
         return self.policies[policy_idx](img)
 
@@ -62,66 +80,75 @@ class ImageNetPolicy(object):
         return "AutoAugment ImageNet Policy"
 
 class ReIDPolicy(object):
-    """ Randomly choose one of the best 24 Sub-policies on ImageNet.
+    """AutoAugment policy adapted for person/vehicle re-identification.
 
-        Example:
-        >>> policy = ImageNetPolicy()
+    A subset of the ImageNet AutoAugment policies with geometric operations
+    (rotation, translation, shear) removed or commented out to avoid
+    destroying the identity-discriminative appearance cues required for
+    re-ID tasks.
+
+    Args:
+        fillcolor (tuple[int, int, int], optional): RGB fill colour for
+            geometric operations.  Defaults to ``(128, 128, 128)``.
+
+    Example:
+        >>> policy = ReIDPolicy()
         >>> transformed = policy(image)
 
-        Example as a PyTorch Transform:
+    Example as a PyTorch Transform:
         >>> transform=transforms.Compose([
         >>>     transforms.Resize(256),
-        >>>     ImageNetPolicy(),
+        >>>     ReIDPolicy(),
         >>>     transforms.ToTensor()])
     """
     def __init__(self, fillcolor=(128, 128, 128)):
         self.policies = [
-            #SubPolicy(0.4, "posterize", 8, 0.6, "rotate", 9, fillcolor),
-            #SubPolicy(0.6, "solarize", 5, 0.6, "autocontrast", 5, fillcolor),
             SubPolicy(0.8, "equalize", 8, 0.6, "equalize", 3, fillcolor),
             SubPolicy(0.6, "posterize", 7, 0.6, "posterize", 6, fillcolor),
-            #SubPolicy(0.4, "equalize", 7, 0.2, "solarize", 4, fillcolor),
-
-            #SubPolicy(0.4, "equalize", 4, 0.8, "rotate", 8, fillcolor),
-            #SubPolicy(0.6, "solarize", 3, 0.6, "equalize", 7, fillcolor),
             SubPolicy(0.8, "posterize", 5, 1.0, "equalize", 2, fillcolor),
-            #SubPolicy(0.2, "rotate", 3, 0.6, "solarize", 8, fillcolor),
             SubPolicy(0.6, "equalize", 8, 0.4, "posterize", 6, fillcolor),
 
-            #SubPolicy(0.8, "rotate", 8, 0.4, "color", 0, fillcolor),
-            #SubPolicy(0.4, "rotate", 9, 0.6, "equalize", 2, fillcolor),
             SubPolicy(0.0, "equalize", 7, 0.8, "equalize", 8, fillcolor),
-            #SubPolicy(0.6, "invert", 4, 1.0, "equalize", 8, fillcolor),
             SubPolicy(0.6, "color", 4, 1.0, "contrast", 8, fillcolor),
 
-            #SubPolicy(0.8, "rotate", 8, 1.0, "color", 2, fillcolor),
-            #SubPolicy(0.8, "color", 8, 0.8, "solarize", 7, fillcolor),
-            #SubPolicy(0.4, "sharpness", 7, 0.6, "invert", 8, fillcolor),
             SubPolicy(0.6, "shearX", 5, 1.0, "equalize", 9, fillcolor),
             SubPolicy(0.4, "color", 0, 0.6, "equalize", 3, fillcolor),
 
-            #SubPolicy(0.4, "equalize", 7, 0.2, "solarize", 4, fillcolor),
             SubPolicy(0.6, "solarize", 5, 0.6, "autocontrast", 5, fillcolor),
-            #SubPolicy(0.6, "invert", 4, 1.0, "equalize", 8, fillcolor),
             SubPolicy(0.6, "color", 4, 1.0, "contrast", 8, fillcolor),
             SubPolicy(0.8, "equalize", 8, 0.6, "equalize", 3, fillcolor)
         ]
 
-
     def __call__(self, img):
+        """Apply a randomly selected sub-policy to the image.
+
+        Args:
+            img (PIL.Image.Image): Input image.
+
+        Returns:
+            PIL.Image.Image: Augmented image.
+        """
         policy_idx = random.randint(0, len(self.policies) - 1)
         return self.policies[policy_idx](img)
 
     def __repr__(self):
         return "ReID Policy"
-class CIFAR10Policy(object):
-    """ Randomly choose one of the best 25 Sub-policies on CIFAR10.
 
-        Example:
+class CIFAR10Policy(object):
+    """Randomly choose one of the best 25 Sub-policies on CIFAR-10.
+
+    Applies the AutoAugment policy optimised for CIFAR-10 (Cubuk et al.,
+    "AutoAugment: Learning Augmentation Strategies from Data", CVPR 2019).
+
+    Args:
+        fillcolor (tuple[int, int, int], optional): RGB fill colour for
+            geometric operations.  Defaults to ``(128, 128, 128)``.
+
+    Example:
         >>> policy = CIFAR10Policy()
         >>> transformed = policy(image)
 
-        Example as a PyTorch Transform:
+    Example as a PyTorch Transform:
         >>> transform=transforms.Compose([
         >>>     transforms.Resize(256),
         >>>     CIFAR10Policy(),
@@ -160,8 +187,15 @@ class CIFAR10Policy(object):
             SubPolicy(0.7, "translateY", 9, 0.9, "autocontrast", 1, fillcolor)
         ]
 
-
     def __call__(self, img):
+        """Apply a randomly selected sub-policy to the image.
+
+        Args:
+            img (PIL.Image.Image): Input image.
+
+        Returns:
+            PIL.Image.Image: Augmented image.
+        """
         policy_idx = random.randint(0, len(self.policies) - 1)
         return self.policies[policy_idx](img)
 
@@ -170,13 +204,20 @@ class CIFAR10Policy(object):
 
 
 class SVHNPolicy(object):
-    """ Randomly choose one of the best 25 Sub-policies on SVHN.
+    """Randomly choose one of the best 25 Sub-policies on SVHN.
 
-        Example:
+    Applies the AutoAugment policy optimised for the Street View House
+    Numbers (SVHN) dataset (Cubuk et al., CVPR 2019).
+
+    Args:
+        fillcolor (tuple[int, int, int], optional): RGB fill colour for
+            geometric operations.  Defaults to ``(128, 128, 128)``.
+
+    Example:
         >>> policy = SVHNPolicy()
         >>> transformed = policy(image)
 
-        Example as a PyTorch Transform:
+    Example as a PyTorch Transform:
         >>> transform=transforms.Compose([
         >>>     transforms.Resize(256),
         >>>     SVHNPolicy(),
@@ -215,8 +256,15 @@ class SVHNPolicy(object):
             SubPolicy(0.7, "shearX", 2, 0.1, "invert", 5, fillcolor)
         ]
 
-
     def __call__(self, img):
+        """Apply a randomly selected sub-policy to the image.
+
+        Args:
+            img (PIL.Image.Image): Input image.
+
+        Returns:
+            PIL.Image.Image: Augmented image.
+        """
         policy_idx = random.randint(0, len(self.policies) - 1)
         return self.policies[policy_idx](img)
 
@@ -225,6 +273,49 @@ class SVHNPolicy(object):
 
 
 class SubPolicy(object):
+    """A composable pair of stochastic image operations used by AutoAugment.
+
+    Each ``SubPolicy`` encapsulates two independent image operations, each
+    with its own application probability and magnitude.  When called, each
+    operation is applied independently according to its probability.
+
+    Supported operation names and their magnitude ranges:
+
+    ================== ====================================
+    Name               Range
+    ================== ====================================
+    ``shearX``         ``[0, 0.3]`` (10 steps)
+    ``shearY``         ``[0, 0.3]`` (10 steps)
+    ``translateX``     ``[0, 150/331]`` (10 steps)
+    ``translateY``     ``[0, 150/331]`` (10 steps)
+    ``rotate``         ``[0°, 30°]`` (10 steps)
+    ``color``          ``[0.0, 0.9]`` (10 steps)
+    ``posterize``      ``8 → 4`` bits (10 steps)
+    ``solarize``       ``256 → 0`` threshold (10 steps)
+    ``contrast``       ``[0.0, 0.9]`` (10 steps)
+    ``sharpness``      ``[0.0, 0.9]`` (10 steps)
+    ``brightness``     ``[0.0, 0.9]`` (10 steps)
+    ``autocontrast``   No magnitude
+    ``equalize``       No magnitude
+    ``invert``         No magnitude
+    ================== ====================================
+
+    For signed operations (shear, translate, rotate, color, contrast,
+    sharpness, brightness) the sign of the magnitude is randomly chosen at
+    each application.
+
+    Args:
+        p1 (float): Probability of applying the first operation.
+        operation1 (str): Name of the first operation (see table above).
+        magnitude_idx1 (int): Index into the magnitude range for the first
+            operation (``0`` = smallest, ``9`` = largest).
+        p2 (float): Probability of applying the second operation.
+        operation2 (str): Name of the second operation.
+        magnitude_idx2 (int): Index into the magnitude range for the second
+            operation.
+        fillcolor (tuple[int, int, int], optional): RGB fill colour used by
+            geometric operations.  Defaults to ``(128, 128, 128)``.
+    """
     def __init__(self, p1, operation1, magnitude_idx1, p2, operation2, magnitude_idx2, fillcolor=(128, 128, 128)):
         ranges = {
             "shearX": np.linspace(0, 0.3, 10),
@@ -277,9 +368,6 @@ class SubPolicy(object):
             "invert": lambda img, magnitude: ImageOps.invert(img)
         }
 
-        # self.name = "{}_{:.2f}_and_{}_{:.2f}".format(
-        #     operation1, ranges[operation1][magnitude_idx1],
-        #     operation2, ranges[operation2][magnitude_idx2])
         self.p1 = p1
         self.operation1 = func[operation1]
         self.magnitude1 = ranges[operation1][magnitude_idx1]
@@ -287,15 +375,33 @@ class SubPolicy(object):
         self.operation2 = func[operation2]
         self.magnitude2 = ranges[operation2][magnitude_idx2]
 
-
     def __call__(self, img):
+        """Apply both operations stochastically.
+
+        Each operation is applied independently with its configured
+        probability.  The image flows through operation 1 (if triggered),
+        then through operation 2 (if triggered).
+
+        Args:
+            img (PIL.Image.Image): Input image.
+
+        Returns:
+            PIL.Image.Image: Augmented image after applying zero, one, or
+            both operations.
+        """
         if random.random() < self.p1: img = self.operation1(img, self.magnitude1)
         if random.random() < self.p2: img = self.operation2(img, self.magnitude2)
         return img
 
 
-
 def show_sixteen(images, titles=0):
+    """Display up to eight images in a 2×4 grid and save to ``DA.jpg``.
+
+    Args:
+        images (list[PIL.Image.Image]): List of at least 8 images.
+        titles (list[str] | int, optional): Axis titles.  Pass ``0``
+            (default) to display no titles.
+    """
     f, axarr = plt.subplots(2, 4, figsize=(15, 15), gridspec_kw={"wspace": 0, "hspace": 0})
     for idx, ax in enumerate(f.axes):
         ax.imshow(images[idx])
@@ -309,4 +415,3 @@ if __name__ == '__main__':
     imgs = []
     for _ in range(8): imgs.append(policy(img))
     show_sixteen(imgs)
-

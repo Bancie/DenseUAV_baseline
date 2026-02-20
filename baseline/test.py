@@ -1,4 +1,31 @@
 # -*- coding: utf-8 -*-
+"""Feature extraction script for DenseUAV geo-localization evaluation.
+
+Loads a trained dual-branch model, extracts L2-normalised embeddings for all
+query and gallery images, and serialises them to a MATLAB ``.mat`` file for
+downstream evaluation.
+
+Configuration is read from CLI flags **and** merged with the ``opts.yaml``
+produced during training (located in the current working directory).
+
+Example:
+    Extract drone-to-satellite (mode 1) features::
+
+        python test.py --name my_run --checkpoint net_119.pth \\
+            --test_dir /path/to/DenseUAV/test --mode 1 --batchsize 128
+
+    Extract satellite-to-drone (mode 2) features::
+
+        python test.py --name my_run --checkpoint net_119.pth \\
+            --test_dir /path/to/DenseUAV/test --mode 2
+
+Outputs:
+    - ``pytorch_result_1.mat`` (mode 1) or ``pytorch_result_2.mat`` (mode 2)
+      — MATLAB file containing ``gallery_f``, ``gallery_label``,
+      ``gallery_path``, ``query_f``, ``query_label``, and ``query_path``.
+    - ``gallery_name.txt`` — list of absolute gallery image paths.
+    - ``query_name.txt``   — list of absolute query image paths.
+"""
 
 from __future__ import print_function, division
 
@@ -94,12 +121,29 @@ dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=opt.
 use_gpu = torch.cuda.is_available()
 
 def fliplr(img):
-    '''flip horizontal'''
+    """Flip a batch of images horizontally.
+
+    Args:
+        img (torch.Tensor): Image tensor of shape ``(N, C, H, W)``.
+
+    Returns:
+        torch.Tensor: Horizontally flipped image tensor of the same shape.
+    """
     inv_idx = torch.arange(img.size(3)-1,-1,-1).long()  # N x C x H x W
     img_flip = img.index_select(3,inv_idx)
     return img_flip
 
 def which_view(name):
+    """Map a dataset split name to an integer view index.
+
+    Args:
+        name (str): Dataset split name, e.g. ``'gallery_satellite'``,
+            ``'query_drone'``, or ``'query_street'``.
+
+    Returns:
+        int: ``1`` for satellite, ``2`` for street, ``3`` for drone,
+            ``-1`` if the view cannot be determined.
+    """
     if 'satellite' in name:
         return 1
     elif 'street' in name:
@@ -111,17 +155,34 @@ def which_view(name):
     return -1
 
 def extract_feature(model,dataloaders, view_index = 1):
+    """Extract L2-normalised feature embeddings from a dataloader.
+
+    For each mini-batch the feature is computed **twice** — once for the
+    original image and once for its horizontal flip — and the two raw
+    feature vectors are summed before L2-normalisation.  This test-time
+    augmentation (TTA) typically improves retrieval accuracy.
+
+    For 3-D part-based features of shape ``(N, D, P)`` the norm is scaled by
+    ``sqrt(P)`` so that the full concatenated vector has unit cosine norm.
+
+    Args:
+        model (torch.nn.Module): Trained dual-branch model in eval mode.
+        dataloaders (torch.utils.data.DataLoader): DataLoader for the target
+            split (query or gallery).
+        view_index (int, optional): Which model branch to use.  ``1`` invokes
+            the satellite branch; ``3`` invokes the drone branch.
+            Defaults to ``1``.
+
+    Returns:
+        torch.Tensor: CPU tensor of shape ``(N, D)`` containing the
+            L2-normalised feature for every image in the dataloader.
+    """
     features = torch.FloatTensor()
     count = 0
     for data in tqdm(dataloaders):
         img, _ = data
         batchsize = img.size()[0]
         count += batchsize
-        # if opt.LPN:
-        #     # ff = torch.FloatTensor(n,2048,6).zero_().cuda()
-        #     ff = torch.FloatTensor(n,512,opt.block).zero_().cuda()
-        # else:
-        #     ff = torch.FloatTensor(n, 2048).zero_().cuda()
         for i in range(2):
             if(i==1):
                 img = fliplr(img)
@@ -133,7 +194,7 @@ def extract_feature(model,dataloaders, view_index = 1):
             outputs = outputs[1]
             if i==0:ff = outputs
             else:ff += outputs
-        # norm feature
+        # Normalise features
         if len(ff.shape)==3:
             # feature size (n,2048,6)
             # 1. To treat every part equally, I calculate the norm for every 2048-dim part feature.
@@ -149,6 +210,19 @@ def extract_feature(model,dataloaders, view_index = 1):
     return features
 
 def get_id(img_path):
+    """Parse integer class labels and file paths from an ImageFolder sample list.
+
+    Args:
+        img_path (list[tuple[str, int]]): List of ``(absolute_path, class_index)``
+            tuples as produced by ``torchvision.datasets.ImageFolder.imgs``.
+            The integer label is derived from the **parent folder name** (which
+            must be a numeric string, e.g. ``'000123'``).
+
+    Returns:
+        tuple:
+            - labels (list[int]): Integer class labels, one per image.
+            - paths (list[str]): Corresponding absolute file paths.
+    """
     camera_id = []
     labels = []
     paths = []
@@ -163,7 +237,7 @@ def get_id(img_path):
 print('-------test-----------')
 
 model = load_network(opt)
-print("这是%s的结果"%opt.checkpoint)
+print("Results for checkpoint: %s" % opt.checkpoint)
 # model.classifier.classifier = nn.Sequential()
 model = model.eval()
 if use_gpu:
@@ -218,4 +292,3 @@ if __name__ == "__main__":
     # print(opt.name)
     # result = 'result.txt'
     # os.system('python evaluate_gpu.py | tee -a %s'%result)
-
