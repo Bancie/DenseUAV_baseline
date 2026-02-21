@@ -29,6 +29,7 @@ The baseline implements **cross-view geo-localization** between UAV-view (drone)
 The system is trained on the **DenseUAV** dataset (2022 version, 2256 location classes) and evaluated using both standard retrieval metrics (CMC, mAP) and spatial accuracy metrics (SDM@K, MA@K).
 
 **Key design decisions:**
+
 - **Shared backbone**: both drone and satellite images pass through the same feature extractor
 - **Modular architecture**: backbones and heads are independently configurable via `opts.yaml`
 - **Multi-loss training**: combines classification loss, triplet loss, and KL divergence (mutual learning)
@@ -108,6 +109,7 @@ Model
 ```
 
 Forward pass:
+
 ```python
 def forward(self, drone_image, satellite_image):
     drone_features    = self.backbone(drone_image)
@@ -127,47 +129,52 @@ Either input can be `None` to run single-view inference.
 
 All backbones are loaded from `timm` and return a feature tensor plus an `output_channel` attribute consumed by the head.
 
-| Key | Architecture | Output Channels |
-|-----|-------------|----------------|
-| `ViTS-224` | ViT-Small / patch16 / 224px | 384 |
-| `ViTS-384` | ViT-Small / patch16 / 384px | 384 |
-| `ViTB-224` | ViT-Base  / patch16 / 224px | 768 |
-| `DeitS-224` | DeiT-Small / 224px | 384 |
-| `DeitB-224` | DeiT-Base  / 224px | 768 |
-| `ResNet50` | ResNet-50 | 2048 |
-| `EfficientNet-B2/B3` | EfficientNet | varies |
-| `VGG16` | VGG-16 | 512 |
-| `Swin-*` | Swin Transformer variants | varies |
-| `ConvNeXt-*` | ConvNeXt variants | varies |
-| `PVTv2-*` | PVTv2 variants | varies |
+| Key                  | Architecture                | Output Channels |
+| -------------------- | --------------------------- | --------------- |
+| `ViTS-224`           | ViT-Small / patch16 / 224px | 384             |
+| `ViTS-384`           | ViT-Small / patch16 / 384px | 384             |
+| `ViTB-224`           | ViT-Base / patch16 / 224px  | 768             |
+| `DeitS-224`          | DeiT-Small / 224px          | 384             |
+| `DeitB-224`          | DeiT-Base / 224px           | 768             |
+| `ResNet50`           | ResNet-50                   | 2048            |
+| `EfficientNet-B2/B3` | EfficientNet                | varies          |
+| `VGG16`              | VGG-16                      | 512             |
+| `Swin-*`             | Swin Transformer variants   | varies          |
+| `ConvNeXt-*`         | ConvNeXt variants           | varies          |
+| `PVTv2-*`            | PVTv2 variants              | varies          |
 
 ---
 
 ### Head Architectures (`models/Head/`)
 
 #### `SingleBranch`
+
 - Uses the CLS token output (transformers) or global average pooling (CNNs)
 - Single FC classifier branch
 - Default head in `opts.yaml`
 
 #### `GeM` — Generalized Mean Pooling
+
 - Applies GeM pooling over spatial patch tokens: \( f = \left(\frac{1}{N}\sum_i x_i^p\right)^{1/p} \)
 - The pooling exponent `p` is a learnable parameter
 - Followed by a FC classifier
 
 #### `LPN` — Local Pattern Network
+
 - Divides spatial tokens into concentric non-overlapping regions
 - One global branch + `block` local branches (controlled by `--block`)
 - At inference, stacks all branch features into a single descriptor
 - Designed for geo-localization where local appearance varies by region
 
 #### `FSRA` — Feature Space Regularization Attention
+
 - Computes an attention heatmap over patch tokens
 - Selects and groups high-attention tokens into `block` sub-descriptors
 - Global classifier + one local classifier per block
 - Improves discrimination via part-based features
 
 #### `NetVLAD` / `NeXtVLAD`
+
 - VLAD-based aggregation over patch tokens
 - Learns cluster centers; each token is soft-assigned to clusters
 - Encodes residuals relative to cluster centers into a fixed-size descriptor
@@ -203,11 +210,11 @@ data_2022/
 
 ### Augmentation Pipeline (`datasets/make_dataloader.py`)
 
-| View | Augmentation |
-|------|-------------|
+| View            | Augmentation                                                                                        |
+| --------------- | --------------------------------------------------------------------------------------------------- |
 | **UAV / Drone** | Random rotation (`rr: uav`), Random affine, Random erasing (`erasing_p=0.3`), optional color jitter |
-| **Satellite** | `RotateAndCrop`, Random affine (`ra: satellite`), Random erasing (`re: satellite`) |
-| **Both** | Resize to (h×w), Random horizontal flip, ImageNet normalization |
+| **Satellite**   | `RotateAndCrop`, Random affine (`ra: satellite`), Random erasing (`re: satellite`)                  |
+| **Both**        | Resize to (h×w), Random horizontal flip, ImageNet normalization                                     |
 
 The view-specific augmentations are specified in `opts.yaml` via `rr`, `ra`, `re` flags.
 
@@ -229,11 +236,11 @@ Standard cross-entropy over `nclasses=2256` classes. Can be swapped for `FocalLo
 
 Metric learning loss applied on the L2-normalized feature embeddings.
 
-| Option | Description |
-|--------|-------------|
+| Option                    | Description                                                  |
+| ------------------------- | ------------------------------------------------------------ |
 | `WeightedSoftTripletLoss` | Soft triplet with exponential weighting (α=10) — **default** |
-| `HardMiningTripletLoss` | Hard negative mining within the batch |
-| `TripletLoss` | Standard triplet loss with fixed margin |
+| `HardMiningTripletLoss`   | Hard negative mining within the batch                        |
+| `TripletLoss`             | Standard triplet loss with fixed margin                      |
 
 ### 3. KL Divergence Loss (`kl_loss: KLLoss`)
 
@@ -259,6 +266,7 @@ L_KL = KL(P_drone || P_satellite) + KL(P_satellite || P_drone)
 8. Checkpoints saved every 10 epochs after epoch 110
 
 **Run training:**
+
 ```bash
 python train.py \
   --name my_experiment \
@@ -288,6 +296,7 @@ Checkpoints are saved to `checkpoints/{name}/`.
 6. Outputs `pytorch_result_1.mat` containing query/gallery features and labels
 
 **Run testing:**
+
 ```bash
 cd checkpoints/my_experiment
 python test.py \
@@ -305,13 +314,13 @@ python test.py \
 
 Operates on the `.mat` feature file from `test.py`.
 
-| Metric | Description |
-|--------|-------------|
-| **Rank-1** | % of queries with correct match at position 1 |
-| **Rank-5** | % of queries with correct match in top 5 |
-| **Rank-10** | % of queries with correct match in top 10 |
+| Metric         | Description                                          |
+| -------------- | ---------------------------------------------------- |
+| **Rank-1**     | % of queries with correct match at position 1        |
+| **Rank-5**     | % of queries with correct match in top 5             |
+| **Rank-10**    | % of queries with correct match in top 10            |
 | **Rank-top1%** | % of queries with correct match in top 1% of gallery |
-| **mAP** | Mean Average Precision across all queries |
+| **mAP**        | Mean Average Precision across all queries            |
 
 Junk images (label = -1) are excluded from the ranking.
 
@@ -322,6 +331,7 @@ Junk images (label = -1) are excluded from the ranking.
 Uses GPS coordinates from `Dense_GPS_ALL.txt` to measure physical proximity.
 
 #### SDM@K — Spatial Distance Metric
+
 Measures weighted average of geographic proximity of the top-K retrieved results:
 
 ```
@@ -331,9 +341,11 @@ SDM@K = Σ_k [ w_k · exp(−d_k · M) ] / Σ_k w_k
 where `d_k` is the geographic distance (metres) to the k-th result and `w_k` is a rank-based weight. Higher is better, maximum = 1.0.
 
 #### MA@K — Meter Accuracy
+
 Fraction of queries for which the **top-1** retrieved result is within **K metres** of the true location (Haversine distance). Reported as a curve over K = 1…100 m.
 
 **Run evaluation:**
+
 ```bash
 python evaluate_gpu.py         # CMC / mAP
 python evaluateDistance.py     # SDM@K / MA@K
@@ -343,36 +355,36 @@ python evaluateDistance.py     # SDM@K / MA@K
 
 ## Configuration Reference (`opts.yaml`)
 
-| Parameter | Default | Description |
-|-----------|---------|-------------|
-| `backbone` | `ViTS-224` | Backbone architecture key |
-| `head` | `SingleBranch` | Head architecture key |
-| `batchsize` | `16` | Training batch size |
-| `h` / `w` | `224` / `224` | Input image resolution |
-| `lr` | `0.003` | Base learning rate (head) |
-| `num_epochs` | `120` | Total training epochs |
-| `num_bottleneck` | `512` | Feature embedding dimension |
-| `in_planes` | `384` | Backbone output channels (auto-set) |
-| `nclasses` | `2256` | Number of location classes |
-| `cls_loss` | `CELoss` | Classification loss type |
-| `feature_loss` | `WeightedSoftTripletLoss` | Metric learning loss type |
-| `kl_loss` | `KLLoss` | Mutual learning loss type |
-| `block` | `1` | Number of parts (for LPN / FSRA) |
-| `share` | `true` | Share backbone weights between views |
-| `autocast` | `true` | Enable mixed precision (AMP) |
-| `droprate` | `0.5` | Dropout rate in classifier |
-| `erasing_p` | `0.3` | Random erasing probability |
-| `rr` | `uav` | Random rotation target view |
-| `ra` | `satellite` | Random affine target view |
-| `re` | `satellite` | Random erasing target view |
-| `cj` | `no` | Color jitter toggle |
-| `sample_num` | `1` | Repeat samples per class per epoch |
-| `warm_epoch` | `0` | LR warm-up epochs |
-| `DA` | `false` | Domain adaptation toggle |
-| `gpu_ids` | `0` | GPU device index |
-| `num_worker` | `8` | DataLoader worker count |
-| `data_dir` | *(path)* | Path to training data |
-| `load_from` | `no` | Path to checkpoint for fine-tuning |
+| Parameter        | Default                   | Description                          |
+| ---------------- | ------------------------- | ------------------------------------ |
+| `backbone`       | `ViTS-224`                | Backbone architecture key            |
+| `head`           | `SingleBranch`            | Head architecture key                |
+| `batchsize`      | `16`                      | Training batch size                  |
+| `h` / `w`        | `224` / `224`             | Input image resolution               |
+| `lr`             | `0.003`                   | Base learning rate (head)            |
+| `num_epochs`     | `120`                     | Total training epochs                |
+| `num_bottleneck` | `512`                     | Feature embedding dimension          |
+| `in_planes`      | `384`                     | Backbone output channels (auto-set)  |
+| `nclasses`       | `2256`                    | Number of location classes           |
+| `cls_loss`       | `CELoss`                  | Classification loss type             |
+| `feature_loss`   | `WeightedSoftTripletLoss` | Metric learning loss type            |
+| `kl_loss`        | `KLLoss`                  | Mutual learning loss type            |
+| `block`          | `1`                       | Number of parts (for LPN / FSRA)     |
+| `share`          | `true`                    | Share backbone weights between views |
+| `autocast`       | `true`                    | Enable mixed precision (AMP)         |
+| `droprate`       | `0.5`                     | Dropout rate in classifier           |
+| `erasing_p`      | `0.3`                     | Random erasing probability           |
+| `rr`             | `uav`                     | Random rotation target view          |
+| `ra`             | `satellite`               | Random affine target view            |
+| `re`             | `satellite`               | Random erasing target view           |
+| `cj`             | `no`                      | Color jitter toggle                  |
+| `sample_num`     | `1`                       | Repeat samples per class per epoch   |
+| `warm_epoch`     | `0`                       | LR warm-up epochs                    |
+| `DA`             | `false`                   | Domain adaptation toggle             |
+| `gpu_ids`        | `0`                       | GPU device index                     |
+| `num_worker`     | `8`                       | DataLoader worker count              |
+| `data_dir`       | _(path)_                  | Path to training data                |
+| `load_from`      | `no`                      | Path to checkpoint for fine-tuning   |
 
 ---
 
@@ -381,6 +393,7 @@ python evaluateDistance.py     # SDM@K / MA@K
 A pretrained model is included at `baseline/net_119.pth` (epoch 119).
 
 **Configuration used for this checkpoint** (from `opts.yaml`):
+
 - Backbone: `ViTS-224` (ViT-Small, 224×224)
 - Head: `SingleBranch`
 - Losses: `CELoss` + `WeightedSoftTripletLoss` (α=10) + `KLLoss`
@@ -394,27 +407,27 @@ Results on the **DenseUAV test set** (drone → satellite retrieval), produced b
 
 ### SDM@K (Spatial Distance Metric)
 
-| K | SDM@K |
-|---|-------|
-| 1 | 0.865 |
-| 5 | 0.804 |
-| 10 | 0.685 |
-| 20 | 0.509 |
-| 50 | 0.299 |
+| K   | SDM@K |
+| --- | ----- |
+| 1   | 0.865 |
+| 5   | 0.804 |
+| 10  | 0.685 |
+| 20  | 0.509 |
+| 50  | 0.299 |
 | 100 | 0.187 |
 
 > SDM@1 = **0.865** indicates strong top-1 geographic proximity.
 
 ### MA@K (Meter Accuracy at K metres)
 
-| Threshold (m) | MA@K |
-|--------------|------|
-| 1 m | 0.830 |
-| 10 m | 0.830 |
-| 20 m | 0.873 |
-| 23 m | 0.905 |
-| 60 m | 0.942 |
-| 100 m | 0.958 |
+| Threshold (m) | MA@K  |
+| ------------- | ----- |
+| 1 m           | 0.830 |
+| 10 m          | 0.830 |
+| 20 m          | 0.873 |
+| 23 m          | 0.905 |
+| 60 m          | 0.942 |
+| 100 m         | 0.958 |
 
 > **83.0%** of queries are localized within **1 metre** of ground truth at top-1.  
 > **95.8%** are within **100 metres**.
@@ -424,6 +437,7 @@ Results on the **DenseUAV test set** (drone → satellite retrieval), produced b
 ## Dependencies
 
 **Core:**
+
 ```
 torch          # PyTorch (CUDA recommended)
 torchvision
@@ -438,12 +452,14 @@ matplotlib
 ```
 
 **Optional:**
+
 ```
 thop           # FLOPs/parameter counting (get_model_flops_params.py)
 resnest        # ResNeSt backbone support
 ```
 
 Install with:
+
 ```bash
 pip install torch torchvision timm numpy scipy Pillow opencv-python pyyaml tqdm matplotlib
 ```
@@ -471,6 +487,11 @@ python ../../baseline/evaluateDistance.py      # SDM@K / MA@K
 ```
 
 Or use the convenience script:
+
 ```bash
 bash baseline/train_test_local.sh
 ```
+
+# Notes
+
+Start here.
