@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.7",
+  "checkpoint_id": "b9885f9acbce",
+  "session_id": "unknown",
+  "strategy": "manual-commit",
+  "created_at": "2026-02-26T12:20:48.160406Z",
+  "branch": "test/from-main/v1",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "test/.DS_Store"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "28c109707fcb",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-02-26T12:20:48.140807Z",
+    "agent_lines": 0,
+    "human_added": 1,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 1,
+    "agent_percentage": 0
+  }
+}
