@@ -31,3 +31,16 @@ requests
 
 # Jupyter notebook support
 ipykernel
+
+# Not yet used
+tensorboard
+transformers
+evaluate
+huggingface_hub
+tensorflow
+torchview
+visualkeras 
+
+lightning
+datasets
+datasets[vision]
