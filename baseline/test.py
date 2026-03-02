@@ -67,8 +67,10 @@ print(opt.name)
 ###load config###
 # load the training config
 config_path = 'opts.yaml'
+# with open(config_path, 'r') as stream:
+#         config = yaml.load(stream)
 with open(config_path, 'r') as stream:
-        config = yaml.load(stream)
+    config = yaml.safe_load(stream)
 for cfg,value in config.items():
     setattr(opt,cfg,value)
 
@@ -88,10 +90,12 @@ for s in str_ms:
     s_f = float(s)
     ms.append(math.sqrt(s_f))
 
-if len(gpu_ids)>0:
+# if len(gpu_ids)>0:
+#     torch.cuda.set_device(gpu_ids[0])
+#     cudnn.benchmark = True
+if len(gpu_ids) > 0 and torch.cuda.is_available():
     torch.cuda.set_device(gpu_ids[0])
     cudnn.benchmark = True
-
 
 data_transforms = transforms.Compose([
         transforms.Resize((opt.h, opt.w), interpolation=3),
@@ -110,12 +114,15 @@ data_query_transforms = transforms.Compose([
 
 data_dir = test_dir
 
+# Requried two folder query_satellite and query_drone
 image_datasets_query = {x: datasets.ImageFolder(os.path.join(data_dir,x) ,data_query_transforms) for x in ['query_satellite','query_drone']}
 
+# Required two folder gallery_satellite and gallery_drone
 image_datasets_gallery = {x: datasets.ImageFolder(os.path.join(data_dir,x) ,data_transforms) for x in ['gallery_satellite','gallery_drone']}
 
 image_datasets = {**image_datasets_query, **image_datasets_gallery}
 
+# Required four folder gallery_satellite, gallery_drone, query_satellite, query_drone
 dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=opt.batchsize,
                                          shuffle=False, num_workers=opt.num_worker) for x in ['gallery_satellite', 'gallery_drone','query_satellite','query_drone']}
 use_gpu = torch.cuda.is_available()

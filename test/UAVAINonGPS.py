@@ -1,10 +1,10 @@
 import marimo
 
 __generated_with = "0.20.2"
-app = marimo.App(width="medium", layout_file="layouts/UAVAINonGPS.slides.json")
+app = marimo.App(width="medium")
 
 
-@app.cell
+@app.cell(hide_code=True)
 def _():
     import marimo as mo
 
@@ -14,6 +14,7 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     logo = mo.center(mo.image(src="resources/logo.png", alt="DenseUAV Logo", width=1000))
+    logo
     return
 
 
@@ -30,9 +31,10 @@ def _(mo):
     documentation, analysis, testing and improvement if possible on the UAV
     self-positioning without GPS by Deep Learning method.
 
-    ## Quick Navigation
-    - [Code analysis](#code-analysis-documentation) - Analyze code structure of author's baseline.
-    - [Testing](#baseline-testing) - Some tests on author's baseline.
+    **Quick Navigation**
+    - [Overview of Marimo](#overview-about-marimo-platform) - Introduces the platform used for testing, developing and presenting experiment results.
+    - [Code analysis](#code-analysis-documentation) - Analyzes the code structure of the author's baseline.
+    - [Experiment Processing](#experiment-processing) - Present our experiment processing.
     """)
     return
 
@@ -40,13 +42,50 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Code Analysis & Documentation
+    # Overview about Marimo platform
+
+    **Marimo** is a next-generation Python notebook that addresses many limitations of traditional Jupyter notebooks. Unlike Jupyter, Marimo is designed as a **reactive notebook** where cells automatically update when their dependencies change, creating a more reliable and interactive development environment.
+
+    ### Key Advantages Over Traditional Notebooks
+
+    #### 1. **Reactive Execution**
+    - Cells automatically re-run when upstream dependencies change
+    - No more stale outputs or hidden state issues
+    - Guarantees reproducible results
+
+    #### 2. **No Hidden State**
+    - Deterministic execution order based on variable dependencies
+    - Eliminates the common "it works in my notebook but not yours" problem
+    - Variables are automatically tracked and managed
+
+    #### 3. **Interactive UI Elements**
+    - Built-in widgets and interactive components
+    - Real-time updates without manual cell execution
+    - Rich HTML and multimedia support
+
+    #### 4. **Git-Friendly**
+    - Notebooks are stored as clean Python files (`.py`)
+    - Better version control and collaboration
+    - No more messy JSON diffs
+
+    #### 5. **Modern Developer Experience**
+    - Built-in formatting and linting
+    - Code completion and error checking
+    - Integrated package management
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Code Analysis & Documentation
 
     This document analyzes the author's official baseline from the [DenseUAV](https://github.com/Dmmm1997/DenseUAV) GitHub repository, located in the `baseline/` folder.
 
     ---
 
-    ### Table of Contents
+    ## Table of Contents
 
     1. [Overview](#overview)
     2. [Directory Structure](#directory-structure)
@@ -64,7 +103,7 @@ def _(mo):
 
     ---
 
-    ### Overview
+    ## Overview
 
     The baseline implements **cross-view geo-localization** between UAV-view (drone) images and satellite-view images. Given a query drone image, the goal is to retrieve the most geographically similar satellite image (or vice versa) from a gallery, without using GPS.
 
@@ -79,7 +118,7 @@ def _(mo):
 
     ---
 
-    ### Directory Structure
+    ## Directory Structure
 
     ```
     baseline/
@@ -540,7 +579,119 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Baseline testing
+    # Experiment Processing
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Chạy baseline từ Marimo (test.py & evaluate_gpu.py)
+
+    Các cell bên dưới gọi script `baseline/test.py` (trích feature → `pytorch_result_1.mat`) và `baseline/evaluate_gpu.py` (CMC / mAP) qua subprocess. Chạy lần lượt để xem kết quả ngay trong notebook.
+    """)
+    return
+
+
+@app.cell
+def _():
+    import subprocess
+    import os
+
+    # Thư mục gốc repo: từ vị trí file này (test/UAVAINonGPS.py) hoặc từ cwd
+    try:
+        _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    except NameError:
+        _repo_root = os.path.abspath(os.path.join(os.getcwd(), ".." if os.path.basename(os.getcwd()) == "test" else "."))
+    baseline_dir = os.path.join(_repo_root, "baseline")
+    test_data_dir = os.path.join(_repo_root, "data", "DenseUAV_data", "test")
+    return baseline_dir, os, subprocess, test_data_dir
+
+
+@app.cell
+def _(baseline_dir, os, subprocess, test_data_dir):
+    # Chạy test.py: extract feature (drone → satellite, mode 1)
+    if not os.path.isdir(test_data_dir):
+        print(f"[Lưu ý] Thư mục test không tồn tại: {test_data_dir}")
+        print("Tạo thư mục test với cấu trúc query_drone, query_satellite, gallery_drone, gallery_satellite hoặc sửa biến test_data_dir.")
+    else:
+        result = subprocess.run(
+            [
+                "python", "test.py",
+                "--test_dir", test_data_dir,
+                "--name", "resnet",
+                "--checkpoint", "net_119.pth",
+                "--mode", "1",
+                "--batchsize", "128",
+            ],
+            cwd=baseline_dir,
+            capture_output=True,
+            text=True,
+        )
+        print(result.stdout)
+        if result.stderr:
+            print("STDERR:", result.stderr)
+        if result.returncode != 0:
+            print("test.py thoát với mã:", result.returncode)
+    return
+
+
+@app.cell
+def _(baseline_dir, os, subprocess):
+    # Chạy evaluate_gpu.py (CMC / mAP) — cần đã chạy test.py để có pytorch_result_1.mat
+    mat_path = os.path.join(baseline_dir, "pytorch_result_1.mat")
+    if not os.path.isfile(mat_path):
+        print("[Lưu ý] Chưa có pytorch_result_1.mat. Chạy cell 'Chạy test.py' trước.")
+    else:
+        out = subprocess.run(
+            ["python", "evaluate_gpu.py"],
+            cwd=baseline_dir,
+            capture_output=True,
+            text=True,
+        )
+        print(out.stdout)
+        if out.stderr:
+            print("STDERR:", out.stderr)
+        if out.returncode != 0:
+            print("evaluate_gpu.py thoát với mã:", out.returncode)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Real-time check
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    phase1 = mo.center(mo.image(src="../test/uml/phase1.png", alt="DenseUAV Logo"))
+    phase1
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Performance Check
+    """)
+    return
+
+
+@app.cell
+def _(mo):
+    phase2 = mo.center(mo.image(src="../test/uml/phase2.png", alt="DenseUAV Logo"))
+    phase2
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Inference
     """)
     return
 
@@ -607,17 +758,7 @@ def _(Image, query_imagepath):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ### Inference
-
-    Inference on author's baseline pretrained model
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    #### Model defined
+    ## Model defined
     """)
     return
 
@@ -701,12 +842,12 @@ def _(torch):
         """
         model.eval()
         predictions = []
-    
+
         with torch.no_grad():
             for batch in data_loader:
                 outputs = model(batch)
                 predictions.append(outputs)
-    
+
         return torch.cat(predictions, dim=0)
 
     print("Inference functions ready - model loaded and set for evaluation")
@@ -723,13 +864,43 @@ def _():
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    #### Class name define
+    ## Class name define
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Store data
     """)
     return
 
 
 @app.cell
-def _():
+def _(torch):
+    torch.cuda.is_available()
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Lỗi baseline
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    - `dataloaders` (`baseline/test.py` line 117-127) yêu cầu 4 folder, gồm:
+        - [x] `gallery_satellite`
+        - [ ] `gallery_drone`
+        - [ ] `query_satellite`
+        - [x] `query_drone`
+    - Trong khi đó, dataset tác giả cung cấp chỉ có 2 folder là `gallery_satellite` và `query_drone`. Hiện đang thiếu 2 folder là: `gallery_drone` và `query_satellite`.
+    """)
     return
 
 

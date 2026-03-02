@@ -44,3 +44,6 @@ visualkeras
 lightning
 datasets
 datasets[vision]
+
+einops
+pytorch_metric_learning
