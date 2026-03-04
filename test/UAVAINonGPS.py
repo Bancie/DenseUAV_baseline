@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.20.2"
+__generated_with = "0.20.4"
 app = marimo.App(width="medium")
 
 
@@ -594,7 +594,7 @@ def _(mo):
     return
 
 
-@app.cell
+@app.cell(disabled=True, hide_code=True)
 def _():
     import subprocess
     import os
@@ -606,55 +606,55 @@ def _():
         _repo_root = os.path.abspath(os.path.join(os.getcwd(), ".." if os.path.basename(os.getcwd()) == "test" else "."))
     baseline_dir = os.path.join(_repo_root, "baseline")
     test_data_dir = os.path.join(_repo_root, "data", "DenseUAV_data", "test")
-    return baseline_dir, os, subprocess, test_data_dir
-
-
-@app.cell
-def _(baseline_dir, os, subprocess, test_data_dir):
-    # Chạy test.py: extract feature (drone → satellite, mode 1)
-    if not os.path.isdir(test_data_dir):
-        print(f"[Lưu ý] Thư mục test không tồn tại: {test_data_dir}")
-        print("Tạo thư mục test với cấu trúc query_drone, query_satellite, gallery_drone, gallery_satellite hoặc sửa biến test_data_dir.")
-    else:
-        result = subprocess.run(
-            [
-                "python", "test.py",
-                "--test_dir", test_data_dir,
-                "--name", "resnet",
-                "--checkpoint", "net_119.pth",
-                "--mode", "1",
-                "--batchsize", "128",
-            ],
-            cwd=baseline_dir,
-            capture_output=True,
-            text=True,
-        )
-        print(result.stdout)
-        if result.stderr:
-            print("STDERR:", result.stderr)
-        if result.returncode != 0:
-            print("test.py thoát với mã:", result.returncode)
     return
 
 
-@app.cell
-def _(baseline_dir, os, subprocess):
-    # Chạy evaluate_gpu.py (CMC / mAP) — cần đã chạy test.py để có pytorch_result_1.mat
-    mat_path = os.path.join(baseline_dir, "pytorch_result_1.mat")
-    if not os.path.isfile(mat_path):
-        print("[Lưu ý] Chưa có pytorch_result_1.mat. Chạy cell 'Chạy test.py' trước.")
-    else:
-        out = subprocess.run(
-            ["python", "evaluate_gpu.py"],
-            cwd=baseline_dir,
-            capture_output=True,
-            text=True,
-        )
-        print(out.stdout)
-        if out.stderr:
-            print("STDERR:", out.stderr)
-        if out.returncode != 0:
-            print("evaluate_gpu.py thoát với mã:", out.returncode)
+@app.cell(disabled=True, hide_code=True)
+def _():
+    # # Chạy test.py: extract feature (drone → satellite, mode 1)
+    # if not os.path.isdir(test_data_dir):
+    #     print(f"[Lưu ý] Thư mục test không tồn tại: {test_data_dir}")
+    #     print("Tạo thư mục test với cấu trúc query_drone, query_satellite, gallery_drone, gallery_satellite hoặc sửa biến test_data_dir.")
+    # else:
+    #     result = subprocess.run(
+    #         [
+    #             "python", "test.py",
+    #             "--test_dir", test_data_dir,
+    #             "--name", "resnet",
+    #             "--checkpoint", "net_119.pth",
+    #             "--mode", "1",
+    #             "--batchsize", "128",
+    #         ],
+    #         cwd=baseline_dir,
+    #         capture_output=True,
+    #         text=True,
+    #     )
+    #     print(result.stdout)
+    #     if result.stderr:
+    #         print("STDERR:", result.stderr)
+    #     if result.returncode != 0:
+    #         print("test.py thoát với mã:", result.returncode)
+    return
+
+
+@app.cell(disabled=True, hide_code=True)
+def _():
+    # # Chạy evaluate_gpu.py (CMC / mAP) — cần đã chạy test.py để có pytorch_result_1.mat
+    # mat_path = os.path.join(baseline_dir, "pytorch_result_1.mat")
+    # if not os.path.isfile(mat_path):
+    #     print("[Lưu ý] Chưa có pytorch_result_1.mat. Chạy cell 'Chạy test.py' trước.")
+    # else:
+    #     out = subprocess.run(
+    #         ["python", "evaluate_gpu.py"],
+    #         cwd=baseline_dir,
+    #         capture_output=True,
+    #         text=True,
+    #     )
+    #     print(out.stdout)
+    #     if out.stderr:
+    #         print("STDERR:", out.stderr)
+    #     if out.returncode != 0:
+    #         print("evaluate_gpu.py thoát với mã:", out.returncode)
     return
 
 
@@ -691,180 +691,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Inference
-    """)
-    return
-
-
-@app.cell
-def _():
-    import torch
-    import torch.nn as nn
-
-    return nn, torch
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    Architecture defined
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(nn):
-    class NeuralNetwork(nn.Module):
-        def __init__(self):
-            super().__init__()
-            self.flatten = nn.Flatten()
-            self.linear_relu_stack = nn.Sequential(
-                nn.Linear(28*28, 512),
-                nn.ReLU(),
-                nn.Linear(512, 512),
-                nn.ReLU(),
-                nn.Linear(512, 10),
-            )
-
-        def forward(self, x):
-            x = self.flatten(x)
-            logits = self.linear_relu_stack(x)
-            return logits
-
-    arch = NeuralNetwork()
-    arch
-    return (arch,)
-
-
-@app.cell(hide_code=True)
-def _():
-    ### Dataset
-    return
-
-
-@app.cell
-def _():
-    query_imagepath = "/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/data/DenseUAV_data/test/query_drone/002256/H80.JPG"
-    query_imagepath
-    return (query_imagepath,)
-
-
-@app.cell
-def _(Image, query_imagepath):
-    image = Image.open(query_imagepath)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Model defined
-    """)
-    return
-
-
-@app.cell
-def _():
-    model_path = "../baseline/net_119.pth"
-    model_path
-    return (model_path,)
-
-
-@app.cell(hide_code=True)
-def _():
-    #### Define task flow
-    return
-
-
-@app.cell
-def _(model_path, torch):
-    # Load the pretrained checkpoint
-    checkpoint = torch.load(model_path, map_location='cpu')
-    print(f"Loaded checkpoint from: {model_path}")
-    print(f"Checkpoint keys: {list(checkpoint.keys())}")
-
-    # Check if it's a state dict or full checkpoint
-    if 'state_dict' in checkpoint:
-        state_dict = checkpoint['state_dict']
-        print("Found state_dict in checkpoint")
-    else:
-        state_dict = checkpoint
-        print("Using checkpoint as state_dict directly")
-    return (state_dict,)
-
-
-@app.cell
-def _(arch, state_dict):
-    # Load the state dict into the architecture
-    try:
-        arch.load_state_dict(state_dict, strict=False)
-        print("Successfully loaded state dict into architecture")
-    except Exception as e:
-        print(f"Error loading state dict: {e}")
-        print("This might be due to architecture mismatch between the checkpoint and current model")
-
-    # Set model to evaluation mode for inference
-    arch.eval()
-    print("Model set to evaluation mode")
-    return
-
-
-@app.cell
-def _(arch, torch):
-    # Setup inference function without autograd
-    def run_inference(model, input_tensor):
-        """
-        Run inference without computing gradients
-        """
-        with torch.no_grad():  # Disable gradient computation
-            model.eval()  # Ensure model is in eval mode
-            output = model(input_tensor)
-            return output
-
-    # Example usage - create dummy input tensor
-    # Note: Adjust input shape based on actual model requirements
-    dummy_input = torch.randn(1, 28*28)  # Batch size 1, flattened 28x28 image
-
-    # Run inference
-    with torch.no_grad():
-        output = arch(dummy_input)
-        print(f"Inference output shape: {output.shape}")
-        print(f"Output: {output}")
-    return
-
-
-@app.cell
-def _(torch):
-    # For batch inference
-    def batch_inference(model, data_loader):
-        """
-        Run inference on a batch of data without gradients
-        """
-        model.eval()
-        predictions = []
-
-        with torch.no_grad():
-            for batch in data_loader:
-                outputs = model(batch)
-                predictions.append(outputs)
-
-        return torch.cat(predictions, dim=0)
-
-    print("Inference functions ready - model loaded and set for evaluation")
-    return
-
-
-@app.cell
-def _():
-    from PIL import Image
-
-    return (Image,)
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Class name define
+    # Note error
     """)
     return
 
@@ -872,35 +699,102 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Store data
-    """)
-    return
-
-
-@app.cell
-def _(torch):
-    torch.cuda.is_available()
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    # Lỗi baseline
-    """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    - `dataloaders` (`baseline/test.py` line 117-127) yêu cầu 4 folder, gồm:
+    ## Baseline mode 2 error
+    - `dataloaders` (`baseline/test.py` line 117-127) requires 4 folders, including:
         - [x] `gallery_satellite`
         - [ ] `gallery_drone`
         - [ ] `query_satellite`
         - [x] `query_drone`
-    - Trong khi đó, dataset tác giả cung cấp chỉ có 2 folder là `gallery_satellite` và `query_drone`. Hiện đang thiếu 2 folder là: `gallery_drone` và `query_satellite`.
+    - However, the dataset provided by the author only has 2 folders: `gallery_satellite` and `query_drone`. Currently missing 2 folders: `gallery_drone` and `query_satellite`.
     """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Load embedding vector database
+    """)
+    return
+
+
+@app.cell
+def _():
+    import scipy.io
+    data = scipy.io.loadmat('../baseline/pytorch_result_1.mat')
+    data
+    return (data,)
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Satellite gallery
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Satellite gallery feature:
+    """)
+    return
+
+
+@app.cell
+def _(data):
+    data['gallery_f']
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Satellite gallery label:
+    """)
+    return
+
+
+@app.cell
+def _(data):
+    data['gallery_label']
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## Query
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Query feature:
+    """)
+    return
+
+
+@app.cell
+def _(data):
+    data['query_f']
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Query label:
+    """)
+    return
+
+
+@app.cell
+def _(data):
+    data['query_label']
     return
 
 
