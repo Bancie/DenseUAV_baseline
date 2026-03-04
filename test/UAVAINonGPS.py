@@ -798,5 +798,20 @@ def _(data):
     return
 
 
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Check Junk label
+    """)
+    return
+
+
+@app.cell
+def _(data):
+    gl = data['gallery_label'][0]
+    print((gl == -1).sum())   # Number of image have label -1
+    return
+
+
 if __name__ == "__main__":
     app.run()

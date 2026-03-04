@@ -149,14 +149,14 @@ print(gallery_feature.shape)
 #print(gallery_feature[0,:])
 CMC = torch.IntTensor(len(gallery_label)).zero_()
 ap = 0.0
-#print(query_label)
+# print(query_label)
 for i in range(len(query_label)):
     ap_tmp, CMC_tmp = evaluate(query_feature[i],query_label[i],gallery_feature,gallery_label)
     if CMC_tmp[0]==-1:
         continue
     CMC = CMC + CMC_tmp
     ap += ap_tmp
-    #print(i, CMC_tmp[0])
+    # print(i, CMC_tmp[0])
 
 CMC = CMC.float()
 CMC = CMC/len(query_label) #average CMC
