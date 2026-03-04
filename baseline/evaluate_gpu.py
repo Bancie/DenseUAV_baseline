@@ -99,12 +99,13 @@ def compute_mAP(index, good_index, junk_index):
         return ap,cmc
 
     # remove junk_index
-    mask = np.in1d(index, junk_index, invert=True)
+    # mask = np.in1d(index, junk_index, invert=True)
+    mask = np.isin(index, junk_index, invert=True) # np.in1d now replaced with np.isin
     index = index[mask]
 
     # find good_index index
     ngood = len(good_index)
-    mask = np.in1d(index, good_index)
+    mask = np.isin(index, good_index)
     rows_good = np.argwhere(mask==True)
     rows_good = rows_good.flatten()
     
@@ -128,14 +129,20 @@ gallery_feature = torch.FloatTensor(result['gallery_f'])
 gallery_label = result['gallery_label'][0]
 multi = os.path.isfile('multi_query.mat')
 
+# New: use CPU when CUDA is not available (avoids AssertionError on PyTorch CPU-only build)
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
 if multi:
     m_result = scipy.io.loadmat('multi_query.mat')
     mquery_feature = torch.FloatTensor(m_result['mquery_f'])
     mquery_label = m_result['mquery_label'][0]
-    mquery_feature = mquery_feature.cuda()
+    # mquery_feature = mquery_feature.cuda()
+    mquery_feature = mquery_feature.to(device)  # New: to(device) for CPU fallback
 
-query_feature = query_feature.cuda(0)
-gallery_feature = gallery_feature.cuda(0)
+# query_feature = query_feature.cuda(0)
+# gallery_feature = gallery_feature.cuda(0)
+query_feature = query_feature.to(device)   # New: to(device) for CPU fallback
+gallery_feature = gallery_feature.to(device)
 
 print(query_feature.shape)
 print(gallery_feature.shape)
