@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.7",
+  "checkpoint_id": "c432bfaf8117",
+  "session_id": "unknown",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-05T14:53:04.608489Z",
+  "branch": "fix-folder/from-test-from-main/v1",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "baseline/embedding_gallery_db_chibang.py",
+    "baseline/pytorch_result_real_time_chibang_1.mat",
+    "baseline/real_time_chibang.py",
+    "test/real_time_query/2256_H80.JPG"
+  ],
+  "agent": "Claude Code",
+  "turn_id": "28c109707fcb",
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-05T14:53:04.583928Z",
+    "agent_lines": 588,
+    "human_added": 20976,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 21564,
+    "agent_percentage": 2.726766833611575
+  }
+}
