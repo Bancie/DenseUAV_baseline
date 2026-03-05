@@ -67,8 +67,10 @@ print(opt.name)
 ###load config###
 # load the training config
 config_path = 'opts.yaml'
+# with open(config_path, 'r') as stream:
+#         config = yaml.load(stream)
 with open(config_path, 'r') as stream:
-        config = yaml.load(stream)
+    config = yaml.safe_load(stream)
 for cfg,value in config.items():
     setattr(opt,cfg,value)
 
@@ -88,10 +90,12 @@ for s in str_ms:
     s_f = float(s)
     ms.append(math.sqrt(s_f))
 
-if len(gpu_ids)>0:
+# if len(gpu_ids)>0:
+#     torch.cuda.set_device(gpu_ids[0])
+#     cudnn.benchmark = True
+if len(gpu_ids) > 0 and torch.cuda.is_available():
     torch.cuda.set_device(gpu_ids[0])
     cudnn.benchmark = True
-
 
 data_transforms = transforms.Compose([
         transforms.Resize((opt.h, opt.w), interpolation=3),
@@ -110,14 +114,39 @@ data_query_transforms = transforms.Compose([
 
 data_dir = test_dir
 
-image_datasets_query = {x: datasets.ImageFolder(os.path.join(data_dir,x) ,data_query_transforms) for x in ['query_satellite','query_drone']}
+# # Requried two folder query_satellite and query_drone
+# image_datasets_query = {x: datasets.ImageFolder(os.path.join(data_dir,x) ,data_query_transforms) for x in ['query_satellite','query_drone']}
 
-image_datasets_gallery = {x: datasets.ImageFolder(os.path.join(data_dir,x) ,data_transforms) for x in ['gallery_satellite','gallery_drone']}
+# # Required two folder gallery_satellite and gallery_drone
+# image_datasets_gallery = {x: datasets.ImageFolder(os.path.join(data_dir,x) ,data_transforms) for x in ['gallery_satellite','gallery_drone']}
 
-image_datasets = {**image_datasets_query, **image_datasets_gallery}
+# image_datasets = {**image_datasets_query, **image_datasets_gallery}
 
-dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=opt.batchsize,
-                                         shuffle=False, num_workers=opt.num_worker) for x in ['gallery_satellite', 'gallery_drone','query_satellite','query_drone']}
+# # Required four folder gallery_satellite, gallery_drone, query_satellite, query_drone
+# dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=opt.batchsize,
+#                                          shuffle=False, num_workers=opt.num_worker) for x in ['gallery_satellite', 'gallery_drone','query_satellite','query_drone']}
+
+# Mode 1 only: required folders query_drone and gallery_satellite
+image_datasets = {
+    'query_drone': datasets.ImageFolder(
+        os.path.join(data_dir, 'query_drone'),
+        data_query_transforms,
+    ),
+    'gallery_satellite': datasets.ImageFolder(
+        os.path.join(data_dir, 'gallery_satellite'),
+        data_transforms,
+    ),
+}
+dataloaders = {
+    x: torch.utils.data.DataLoader(
+        image_datasets[x],
+        batch_size=opt.batchsize,
+        shuffle=False,
+        num_workers=opt.num_worker,
+    )
+    for x in ['query_drone', 'gallery_satellite']
+}
+
 use_gpu = torch.cuda.is_available()
 
 def fliplr(img):
@@ -177,6 +206,8 @@ def extract_feature(model,dataloaders, view_index = 1):
         torch.Tensor: CPU tensor of shape ``(N, D)`` containing the
             L2-normalised feature for every image in the dataloader.
     """
+    # Use CPU when CUDA is not available (e.g. PyTorch CPU-only build); avoids AssertionError
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     features = torch.FloatTensor()
     count = 0
     for data in tqdm(dataloaders):
@@ -186,7 +217,9 @@ def extract_feature(model,dataloaders, view_index = 1):
         for i in range(2):
             if(i==1):
                 img = fliplr(img)
-            input_img = Variable(img.cuda())
+            # Original (GPU-only): input_img = Variable(img.cuda())
+            # New: move input to same device as model so it runs on CPU when CUDA is not available
+            input_img = Variable(img.to(device))
             if view_index == 1:
                 outputs, _ = model(input_img, None)
             elif view_index ==3:

@@ -1,0 +1,71 @@
+@startuml
+' Phase 1: baseline testing flow
+title Baseline testing
+|Notebook|
+start
+fork
+|DenseUAV dataset|
+:Take a small example;
+note right
+""A small region on the map""
+end note
+|Notebook|
+:Visualize the small example;
+:Store data;
+fork again
+|Baseline|
+:Import the architecture;
+note right
+""models/taskflow.py"";
+end note
+|Notebook|
+:Visualize the architecture;
+:Store the architecture;
+fork again
+|Notebook|
+:Store the model;
+note left
+""net_119.pth""
+end note
+end fork
+fork
+partition "Embedding vector database" {
+:Inference;
+note right
+All the ""data stored""
+end note
+:Store the embedding vector list (EV);
+note right
+214-dimensional
+end note
+:Hashing;
+:Store the hashed embedding vector list (EVH);
+note right
+1-dimensional
+end note
+}
+fork again
+|DenseUAV dataset|
+:Take a real-time image;
+note left
+""data/DenseUAV_data/test/query_drone""
+Use it as a real-time image to test the baseline model.
+end note
+|Notebook|
+partition "Embedding vector query" {
+:Inference & hashing;
+note left
+Only the real-time image
+end note
+:Store the 1-D query vector embedding (QEVH);
+}
+|Notebook|
+end fork
+|Notebook|
+partition "Location result" {
+:Rank by similarity;
+:Store the top-K results;
+:Return the location result;
+}
+stop
+@enduml
