@@ -46,29 +46,29 @@ def _(mo):
 
     **Marimo** is a next-generation Python notebook that addresses many limitations of traditional Jupyter notebooks. Unlike Jupyter, Marimo is designed as a **reactive notebook** where cells automatically update when their dependencies change, creating a more reliable and interactive development environment.
 
-    ### Key Advantages Over Traditional Notebooks
+    Key Advantages Over Traditional Notebooks
 
-    #### 1. **Reactive Execution**
+    1. **Reactive Execution**
     - Cells automatically re-run when upstream dependencies change
     - No more stale outputs or hidden state issues
     - Guarantees reproducible results
 
-    #### 2. **No Hidden State**
+    2. **No Hidden State**
     - Deterministic execution order based on variable dependencies
     - Eliminates the common "it works in my notebook but not yours" problem
     - Variables are automatically tracked and managed
 
-    #### 3. **Interactive UI Elements**
+    3. **Interactive UI Elements**
     - Built-in widgets and interactive components
     - Real-time updates without manual cell execution
     - Rich HTML and multimedia support
 
-    #### 4. **Git-Friendly**
+    4. **Git-Friendly**
     - Notebooks are stored as clean Python files (`.py`)
     - Better version control and collaboration
     - No more messy JSON diffs
 
-    #### 5. **Modern Developer Experience**
+    5. **Modern Developer Experience**
     - Built-in formatting and linting
     - Code completion and error checking
     - Integrated package management
@@ -579,82 +579,8 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Experiment Processing
+    # Experiment planning
     """)
-    return
-
-
-@app.cell(hide_code=True)
-def _(mo):
-    mo.md(r"""
-    ## Chạy baseline từ Marimo (test.py & evaluate_gpu.py)
-
-    Các cell bên dưới gọi script `baseline/test.py` (trích feature → `pytorch_result_1.mat`) và `baseline/evaluate_gpu.py` (CMC / mAP) qua subprocess. Chạy lần lượt để xem kết quả ngay trong notebook.
-    """)
-    return
-
-
-@app.cell(disabled=True, hide_code=True)
-def _():
-    import subprocess
-    import os
-
-    # Thư mục gốc repo: từ vị trí file này (test/UAVAINonGPS.py) hoặc từ cwd
-    try:
-        _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    except NameError:
-        _repo_root = os.path.abspath(os.path.join(os.getcwd(), ".." if os.path.basename(os.getcwd()) == "test" else "."))
-    baseline_dir = os.path.join(_repo_root, "baseline")
-    test_data_dir = os.path.join(_repo_root, "data", "DenseUAV_data", "test")
-    return
-
-
-@app.cell(disabled=True, hide_code=True)
-def _():
-    # # Chạy test.py: extract feature (drone → satellite, mode 1)
-    # if not os.path.isdir(test_data_dir):
-    #     print(f"[Lưu ý] Thư mục test không tồn tại: {test_data_dir}")
-    #     print("Tạo thư mục test với cấu trúc query_drone, query_satellite, gallery_drone, gallery_satellite hoặc sửa biến test_data_dir.")
-    # else:
-    #     result = subprocess.run(
-    #         [
-    #             "python", "test.py",
-    #             "--test_dir", test_data_dir,
-    #             "--name", "resnet",
-    #             "--checkpoint", "net_119.pth",
-    #             "--mode", "1",
-    #             "--batchsize", "128",
-    #         ],
-    #         cwd=baseline_dir,
-    #         capture_output=True,
-    #         text=True,
-    #     )
-    #     print(result.stdout)
-    #     if result.stderr:
-    #         print("STDERR:", result.stderr)
-    #     if result.returncode != 0:
-    #         print("test.py thoát với mã:", result.returncode)
-    return
-
-
-@app.cell(disabled=True, hide_code=True)
-def _():
-    # # Chạy evaluate_gpu.py (CMC / mAP) — cần đã chạy test.py để có pytorch_result_1.mat
-    # mat_path = os.path.join(baseline_dir, "pytorch_result_1.mat")
-    # if not os.path.isfile(mat_path):
-    #     print("[Lưu ý] Chưa có pytorch_result_1.mat. Chạy cell 'Chạy test.py' trước.")
-    # else:
-    #     out = subprocess.run(
-    #         ["python", "evaluate_gpu.py"],
-    #         cwd=baseline_dir,
-    #         capture_output=True,
-    #         text=True,
-    #     )
-    #     print(out.stdout)
-    #     if out.stderr:
-    #         print("STDERR:", out.stderr)
-    #     if out.returncode != 0:
-    #         print("evaluate_gpu.py thoát với mã:", out.returncode)
     return
 
 
@@ -691,7 +617,7 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    # Note error
+    # Note for Code Fix
     """)
     return
 
@@ -699,13 +625,13 @@ def _(mo):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    ## Baseline mode 2 error
-    - `dataloaders` (`baseline/test.py` line 117-127) requires 4 folders, including:
-        - [x] `gallery_satellite`
-        - [ ] `gallery_drone`
-        - [ ] `query_satellite`
-        - [x] `query_drone`
-    - However, the dataset provided by the author only has 2 folders: `gallery_satellite` and `query_drone`. Currently missing 2 folders: `gallery_drone` and `query_satellite`.
+    - Baseline mode 2 error
+        - `dataloaders` (`baseline/test.py` line 117-127) requires 4 folders, including:
+            - [x] `gallery_satellite`
+            - [ ] `gallery_drone`
+            - [ ] `query_satellite`
+            - [x] `query_drone`
+        - However, the dataset provided by the author only has 2 folders: `gallery_satellite` and `query_drone`. Currently missing 2 folders: `gallery_drone` and `query_satellite`.
     """)
     return
 
@@ -723,7 +649,7 @@ def _():
     import scipy.io
     data = scipy.io.loadmat('../baseline/pytorch_result_1.mat')
     data
-    return (data,)
+    return data, scipy
 
 
 @app.cell(hide_code=True)
@@ -798,18 +724,340 @@ def _(data):
     return
 
 
+@app.cell
+def _(data):
+    # Check Junk label
+    gl = data['gallery_label'][0]
+    print((gl == -1).sum())   # Number of image have label -1
+    return
+
+
+@app.cell
+def _(mo):
+    mo.md(f"""
+    # Evaluation metrics
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    import os, sys
+
+    try:
+        _repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    except NameError:
+        _repo_root = os.path.abspath(os.path.join(os.getcwd(), ".." if os.path.basename(os.getcwd()) == "test" else "."))
+
+    if _repo_root not in sys.path:
+        sys.path.append(_repo_root)
+
+    baseline_dir = os.path.join(_repo_root, "baseline")
+    mat_file_path = os.path.join(baseline_dir, "pytorch_result_1.mat")
+
+    # Change to baseline directory so the script can find pytorch_result_1.mat
+    os.chdir(baseline_dir)
+    return baseline_dir, os, sys
+
+
+@app.cell(hide_code=True)
+def _():
+    from baseline import evaluate_gpu
+
+    return (evaluate_gpu,)
+
+
+@app.cell(hide_code=True)
+def _():
+    import torch
+    import numpy as np
+
+    return np, torch
+
+
+@app.cell(hide_code=True)
+def recall(evaluate_gpu, scipy, torch):
+    # 1. Load features từ .mat
+    result = scipy.io.loadmat("pytorch_result_1.mat")
+    query_feature  = torch.FloatTensor(result["query_f"])          # shape: (Nq, D)
+    query_label    = result["query_label"][0]                      # shape: (Nq,)
+    gallery_feature = torch.FloatTensor(result["gallery_f"])       # shape: (Ng, D)
+    gallery_label   = result["gallery_label"][0]                   # shape: (Ng,)
+
+    # 2. Chọn device (GPU nếu có, không thì CPU)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    query_feature   = query_feature.to(device)
+    gallery_feature = gallery_feature.to(device)
+
+    # 3. Vòng lặp đánh giá
+    CMC = torch.IntTensor(len(gallery_label)).zero_()
+    ap = 0.0
+
+    for i in range(len(query_label)):
+        ap_tmp, CMC_tmp = evaluate_gpu.evaluate(
+            query_feature[i],
+            int(query_label[i]),
+            gallery_feature,
+            gallery_label
+        )
+        if CMC_tmp[0] == -1:
+            continue
+        CMC += CMC_tmp
+        ap += ap_tmp
+
+    CMC = CMC.float() / len(query_label)
+    mAP = ap / len(query_label)
+    return (CMC,)
+
+
+@app.cell(hide_code=True)
+def _(CMC, np):
+    import matplotlib.pyplot as plt
+
+    fig, _ax = plt.subplots(1, 1, figsize=(16, 6))
+
+    # Plot 1: CMC Curve (Cumulative Matching Characteristic)
+    cmc_np = CMC.cpu().numpy()
+    ranks = np.arange(1, len(cmc_np) + 1)
+
+    _ax.plot(ranks, cmc_np * 100, color="#2196F3", linewidth=1)
+    _ax.set_title("CMC Curve (Cumulative Matching Characteristic)", fontsize=14, fontweight="bold")
+    _ax.set_xlabel("Rank", fontsize=12)
+    _ax.set_ylabel("Recognition Rate (%)", fontsize=12)
+    _ax.set_xlim(1, min(100, len(cmc_np)))
+    _ax.set_ylim(0, 105)
+    _ax.grid(True, alpha=0.3)
+
+    # Annotate key ranks
+    for k in [1, 5, 10]:
+        if k <= len(cmc_np):
+            _ax.axhline(y=cmc_np[k - 1] * 100, color="gray", linestyle="--", alpha=0.4)
+            _ax.scatter([k], [cmc_np[k - 1] * 100], color="#F44336", s=60, zorder=5)
+            _ax.annotate(
+                f"R@{k}: {cmc_np[k-1]*100:.2f}%",
+                xy=(k, cmc_np[k - 1] * 100),
+                xytext=(k + 5, cmc_np[k - 1] * 100 - 5),
+                fontsize=10,
+                fontweight="bold",
+                arrowprops=dict(arrowstyle="->", color="#F44336"),
+                color="#F44336",
+            )
+
+    fig.tight_layout()
+    plt.gca()
+    return (plt,)
+
+
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Check Junk label
+    ## CMC Curve (Cumulative Matching Characteristic)
+
+    The **CMC curve** shows how retrieval accuracy improves as we consider more candidates in the ranked list.
+
+    - **X-axis (Rank):** The number of top-K retrieved gallery images considered.
+    - **Y-axis (Recognition Rate %):** The percentage of queries for which the correct match appears within the top-K results.
+    - **Key annotated points (R@1, R@5, R@10):** These are the standard recall benchmarks:
+      - **R@1** — How often the *very first* retrieved satellite image is the correct one.
+      - **R@5** — How often the correct match is among the top 5 results.
+      - **R@10** — How often the correct match is among the top 10 results.
+    - **Interpretation:** A curve that rises steeply and plateaus near 100% early indicates a strong model. The closer R@1 is to 100%, the better the model is at retrieving the exact correct satellite image on its first attempt.
+
+    ## Evaluation Results
+
+    | Metric | Value |
+    |--------|-------|
+    | **Recall@1** | {CMC[0] * 100:.2f}% |
+    | **Recall@5** | {CMC[4] * 100:.2f}% |
+    | **Recall@10** | {CMC[9] * 100:.2f}% |
+    | **Recall@top1%** | {CMC[round(len(gallery_label) * 0.01)] * 100:.2f}% |
+    | **mAP** | {mAP * 100:.2f}% |
+
+    ## Summary
+
+    | Plot | Scope | Purpose |
+    |------|-------|---------|
+    | **CMC Curve** | Aggregated over **all** queries | Shows overall retrieval performance across ranks |
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Real-time testing
+    """)
+    return
+
+
+@app.cell(hide_code=True)
+def _(baseline_dir, sys):
+    import importlib
+
+    # Ensure baseline directory is on sys.path so that submodules like evaluate_gpu can be found
+    if baseline_dir not in sys.path:
+        sys.path.insert(0, baseline_dir)
+    return
+
+
+@app.cell
+def _():
+    from baseline.real_time_chibang import UAVnonGPS
+
+    return (UAVnonGPS,)
+
+
+@app.cell
+def _(scipy):
+    embedding_gallery = scipy.io.loadmat('../baseline/pytorch_result_real_time_chibang_1.mat')
+    embedding_gallery
+    return
+
+
+@app.cell
+def _(UAVnonGPS):
+    uav = UAVnonGPS(
+        EmbeddingDatabase="../baseline/pytorch_result_real_time_chibang_1.mat",
+        model="net_119.pth",
+        batchsize=128,
+        mode=1,
+    )
+    return (uav,)
+
+
+@app.cell
+def _(plt):
+    from PIL import Image
+
+    _query_img = Image.open("/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test/real_time_query/2256_H80.JPG")
+
+    fig_query, _ax_query = plt.subplots(1, 1, figsize=(8, 8))
+    _ax_query.imshow(_query_img)
+    _ax_query.set_title("Query Image: 2256_H80.JPG", fontsize=14, fontweight="bold")
+    _ax_query.axis("off")
+    fig_query.tight_layout()
+    plt.gca()
+    return (Image,)
+
+
+@app.cell
+def query_feature_test(baseline_dir, os, uav):
+    _query_image_path = os.path.join(os.path.dirname(baseline_dir), "test", "real_time_query", "2256_H80.JPG")
+    q_emb = uav.query_embedding(_query_image_path)
+    q_emb
+    return (q_emb,)
+
+
+@app.cell
+def _(q_emb, uav):
+    ranking = uav.ranking_by_similarity(q_emb)
+
+    for item in ranking[:10]:
+        print(item["rank"], item["score"], item["gallery_path"], item["gallery_label"])
+    return (ranking,)
+
+
+@app.cell
+def _(mo, os):
+    import polars as pl
+
+    def show_top_k_details(ranking, K=5, query_label=2256):
+        _top_k_df = pl.DataFrame({
+            "Rank": [item["rank"] for item in ranking[:K]],
+            "Similarity Score": [round(item["score"], 6) for item in ranking[:K]],
+            "Gallery Label": [int(item["gallery_label"]) for item in ranking[:K]],
+            "Gallery Path": [os.path.basename(item["gallery_path"]) for item in ranking[:K]],
+            "Match": ["✅" if int(item["gallery_label"]) == query_label else "❌" for item in ranking[:K]],
+        })
+
+        _top1_match = '✅ Correct' if int(ranking[0]['gallery_label']) == query_label else '❌ Wrong'
+
+        return mo.vstack([
+            mo.md(f"📊 Top-{K} Retrieval Details"),
+            mo.md(
+                f"**Query Label:** {query_label} &nbsp;&nbsp;|&nbsp;&nbsp; "
+                f"**Top-1 Score:** {ranking[0]['score']:.6f} &nbsp;&nbsp;|&nbsp;&nbsp; "
+                f"**Top-1 Match:** {_top1_match}"
+            ),
+            _top_k_df,
+        ])
+
+    return (show_top_k_details,)
+
+
+@app.cell
+def _(ranking, show_top_k_details):
+    show_top_k_details(ranking, K=10, query_label=2256)
+    return
+
+
+@app.cell
+def _(plt):
+    def plot_top_k_scores(ranking, K=5, query_label=2256):
+        _fig_scores, _ax_scores = plt.subplots(1, 1, figsize=(10, 4))
+
+        _ranks = [f"Rank {item['rank']}\n(Label {int(item['gallery_label'])})" for item in ranking[:K]]
+        _scores = [item["score"] for item in ranking[:K]]
+        _colors = ["#4CAF50" if int(item["gallery_label"]) == query_label else "#F44336" for item in ranking[:K]]
+
+        _bars = _ax_scores.bar(_ranks, _scores, color=_colors, edgecolor="white", linewidth=1.5, width=0.6)
+
+        for _bar, _s in zip(_bars, _scores):
+            _ax_scores.text(_bar.get_x() + _bar.get_width() / 2, _bar.get_height() + 0.002,
+                            f"{_s:.4f}", ha="center", va="bottom", fontsize=11, fontweight="bold")
+
+        _ax_scores.set_title(f"Top-{K} Similarity Scores (Green = Correct Match, Red = Wrong)", fontsize=13, fontweight="bold")
+        _ax_scores.set_ylabel("Cosine Similarity", fontsize=12)
+        _ax_scores.set_ylim(0, max(_scores) * 1.12)
+        _ax_scores.grid(axis="y", alpha=0.3)
+        _fig_scores.tight_layout()
+        return plt.gca()
+
+    return (plot_top_k_scores,)
+
+
+@app.cell
+def _(plot_top_k_scores, ranking):
+    plot_top_k_scores(ranking, K=10, query_label=2256)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    ## example 2
     """)
     return
 
 
 @app.cell
-def _(data):
-    gl = data['gallery_label'][0]
-    print((gl == -1).sum())   # Number of image have label -1
+def _(Image, plt):
+    _query_img = Image.open("/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test/real_time_query/3032_H80.JPG")
+
+    _fig_query, _ax_query = plt.subplots(1, 1, figsize=(8, 8))
+    _ax_query.imshow(_query_img)
+    _ax_query.set_title("Query Image: 3032_H80.JPG", fontsize=14, fontweight="bold")
+    _ax_query.axis("off")
+    _fig_query.tight_layout()
+    plt.gca()
+    return
+
+
+@app.cell
+def _(baseline_dir, os, uav):
+    ranking2 = uav.ranking_by_similarity(uav.query_embedding(os.path.join(os.path.dirname(baseline_dir), "test", "real_time_query", "3032_H80.JPG")))
+    return (ranking2,)
+
+
+@app.cell
+def _(ranking2, show_top_k_details):
+    show_top_k_details(ranking2, K=10, query_label=3032)
+    return
+
+
+@app.cell
+def _(plot_top_k_scores, ranking):
+    plot_top_k_scores(ranking, K=10, query_label=2256)
     return
 
 
