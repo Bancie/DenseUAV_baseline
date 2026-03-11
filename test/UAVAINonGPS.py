@@ -1056,8 +1056,53 @@ def _(ranking2, show_top_k_details):
 
 
 @app.cell
-def _(plot_top_k_scores, ranking):
-    plot_top_k_scores(ranking, K=10, query_label=2256)
+def _(plot_top_k_scores, ranking2):
+    plot_top_k_scores(ranking2, K=10, query_label=3032)
+    return
+
+
+@app.cell(hide_code=True)
+def _():
+    ## Example 3
+    return
+
+
+@app.cell
+def _(Image, plt):
+    _query_img = Image.open("/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test/real_time_query/2811_H90.JPG")
+
+    _fig_query, _ax_query = plt.subplots(1, 1, figsize=(8, 8))
+    _ax_query.imshow(_query_img)
+    _ax_query.set_title("Query Image: 2811_H90.JPG", fontsize=14, fontweight="bold")
+    _ax_query.axis("off")
+    _fig_query.tight_layout()
+    plt.gca()
+    return
+
+
+@app.cell
+def _(baseline_dir, os, uav):
+    ranking3 = uav.ranking_by_similarity(uav.query_embedding(os.path.join(os.path.dirname(baseline_dir), "test", "real_time_query", "2811_H90.JPG")))
+    return (ranking3,)
+
+
+@app.cell
+def _(ranking3, show_top_k_details):
+    show_top_k_details(ranking3, K=10, query_label=2811)
+    return
+
+
+@app.cell
+def _(plot_top_k_scores, ranking3):
+    plot_top_k_scores(ranking3, K=10, query_label=2811)
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    # Training
+    """)
     return
 
 

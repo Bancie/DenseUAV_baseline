@@ -18,7 +18,8 @@ This document analyzes the author's official baseline from the [DenseUAV](https:
 10. [Pretrained Checkpoint](#pretrained-checkpoint)
 11. [Benchmark Results](#benchmark-results)
 12. [Dependencies](#dependencies)
-13. [Quick Start](#quick-start)
+13. [Training on Modal GPU](#training-on-modal-gpu)
+14. [Quick Start](#quick-start)
 
 ---
 
@@ -47,6 +48,7 @@ baseline/
 ├── evaluateDistance.py         # Compute SDM@K and MA@K (GPS-based)
 ├── opts.yaml                   # Default hyperparameter configuration
 ├── train_test_local.sh         # Convenience shell script (train → test → evaluate)
+├── train_modal.py              # Run training on Modal GPU (cloud)
 │
 ├── net_119.pth                 # Pretrained checkpoint (epoch 119)
 ├── pytorch_result_1.mat        # Saved features from test.py
@@ -129,6 +131,7 @@ Either input can be `None` to run single-view inference.
 
 All backbones are loaded from `timm` and return a feature tensor plus an `output_channel` attribute consumed by the head.
 
+
 | Key                  | Architecture                | Output Channels |
 | -------------------- | --------------------------- | --------------- |
 | `ViTS-224`           | ViT-Small / patch16 / 224px | 384             |
@@ -143,6 +146,7 @@ All backbones are loaded from `timm` and return a feature tensor plus an `output
 | `ConvNeXt-*`         | ConvNeXt variants           | varies          |
 | `PVTv2-*`            | PVTv2 variants              | varies          |
 
+
 ---
 
 ### Head Architectures (`models/Head/`)
@@ -155,7 +159,7 @@ All backbones are loaded from `timm` and return a feature tensor plus an `output
 
 #### `GeM` — Generalized Mean Pooling
 
-- Applies GeM pooling over spatial patch tokens: \( f = \left(\frac{1}{N}\sum_i x_i^p\right)^{1/p} \)
+- Applies GeM pooling over spatial patch tokens:  f = \left(\frac{1}{N}\sum_i x_i^p\right)^{1/p} 
 - The pooling exponent `p` is a learnable parameter
 - Followed by a FC classifier
 
@@ -210,11 +214,13 @@ data_2022/
 
 ### Augmentation Pipeline (`datasets/make_dataloader.py`)
 
+
 | View            | Augmentation                                                                                        |
 | --------------- | --------------------------------------------------------------------------------------------------- |
 | **UAV / Drone** | Random rotation (`rr: uav`), Random affine, Random erasing (`erasing_p=0.3`), optional color jitter |
 | **Satellite**   | `RotateAndCrop`, Random affine (`ra: satellite`), Random erasing (`re: satellite`)                  |
 | **Both**        | Resize to (h×w), Random horizontal flip, ImageNet normalization                                     |
+
 
 The view-specific augmentations are specified in `opts.yaml` via `rr`, `ra`, `re` flags.
 
@@ -236,11 +242,13 @@ Standard cross-entropy over `nclasses=2256` classes. Can be swapped for `FocalLo
 
 Metric learning loss applied on the L2-normalized feature embeddings.
 
+
 | Option                    | Description                                                  |
 | ------------------------- | ------------------------------------------------------------ |
 | `WeightedSoftTripletLoss` | Soft triplet with exponential weighting (α=10) — **default** |
 | `HardMiningTripletLoss`   | Hard negative mining within the batch                        |
 | `TripletLoss`             | Standard triplet loss with fixed margin                      |
+
 
 ### 3. KL Divergence Loss (`kl_loss: KLLoss`)
 
@@ -289,8 +297,8 @@ Checkpoints are saved to `checkpoints/{name}/`.
 1. Loads a trained checkpoint (`--checkpoint net_119.pth`)
 2. Iterates over query and gallery sets (drone or satellite)
 3. Supports **two retrieval modes**:
-   - Mode 1: drone query → satellite gallery
-   - Mode 2: satellite query → drone gallery
+  - Mode 1: drone query → satellite gallery
+  - Mode 2: satellite query → drone gallery
 4. **Flip augmentation**: features of the original and horizontally-flipped image are averaged
 5. Features are **L2-normalized**
 6. Outputs `pytorch_result_1.mat` containing query/gallery features and labels
@@ -314,6 +322,7 @@ python test.py \
 
 Operates on the `.mat` feature file from `test.py`.
 
+
 | Metric         | Description                                          |
 | -------------- | ---------------------------------------------------- |
 | **Rank-1**     | % of queries with correct match at position 1        |
@@ -321,6 +330,7 @@ Operates on the `.mat` feature file from `test.py`.
 | **Rank-10**    | % of queries with correct match in top 10            |
 | **Rank-top1%** | % of queries with correct match in top 1% of gallery |
 | **mAP**        | Mean Average Precision across all queries            |
+
 
 Junk images (label = -1) are excluded from the ranking.
 
@@ -355,6 +365,7 @@ python evaluateDistance.py     # SDM@K / MA@K
 
 ## Configuration Reference (`opts.yaml`)
 
+
 | Parameter        | Default                   | Description                          |
 | ---------------- | ------------------------- | ------------------------------------ |
 | `backbone`       | `ViTS-224`                | Backbone architecture key            |
@@ -383,8 +394,9 @@ python evaluateDistance.py     # SDM@K / MA@K
 | `DA`             | `false`                   | Domain adaptation toggle             |
 | `gpu_ids`        | `0`                       | GPU device index                     |
 | `num_worker`     | `8`                       | DataLoader worker count              |
-| `data_dir`       | _(path)_                  | Path to training data                |
+| `data_dir`       | *(path)*                  | Path to training data                |
 | `load_from`      | `no`                      | Path to checkpoint for fine-tuning   |
+
 
 ---
 
@@ -407,6 +419,7 @@ Results on the **DenseUAV test set** (drone → satellite retrieval), produced b
 
 ### SDM@K (Spatial Distance Metric)
 
+
 | K   | SDM@K |
 | --- | ----- |
 | 1   | 0.865 |
@@ -416,9 +429,11 @@ Results on the **DenseUAV test set** (drone → satellite retrieval), produced b
 | 50  | 0.299 |
 | 100 | 0.187 |
 
+
 > SDM@1 = **0.865** indicates strong top-1 geographic proximity.
 
 ### MA@K (Meter Accuracy at K metres)
+
 
 | Threshold (m) | MA@K  |
 | ------------- | ----- |
@@ -428,6 +443,7 @@ Results on the **DenseUAV test set** (drone → satellite retrieval), produced b
 | 23 m          | 0.905 |
 | 60 m          | 0.942 |
 | 100 m         | 0.958 |
+
 
 > **83.0%** of queries are localized within **1 metre** of ground truth at top-1.  
 > **95.8%** are within **100 metres**.
@@ -463,6 +479,52 @@ Install with:
 ```bash
 pip install torch torchvision timm numpy scipy Pillow opencv-python pyyaml tqdm matplotlib
 ```
+
+---
+
+## Training on Modal GPU
+
+You can run training on [Modal](https://modal.com) cloud GPUs (e.g. A100) so that you do not need a local CUDA machine. Data and checkpoints are stored on a Modal Volume.
+
+**Prerequisites:** Install Modal and authenticate (e.g. `pip install modal`, then `modal token new` or `modal setup`).
+
+**1. Create the Volume and upload training data (one-time, or when you change the dataset):**
+
+From the repo root:
+
+```bash
+modal volume put denseuav-training data/train /path/to/your/DenseUAV_data/train
+```
+
+Replace `/path/to/your/DenseUAV_data/train` with the path to your local `train` folder (the one that contains per-class subfolders). Check contents with:
+
+```bash
+modal volume ls denseuav-training
+```
+
+**2. Run training on Modal (from repo root):**
+
+```bash
+modal run baseline/train_modal.py --run-name my_run
+```
+
+Training uses the same config as `baseline/opts.yaml` and runs for 120 epochs by default. Checkpoints are written to the Volume. The run may take several hours; you can detach with `modal run --detach baseline/train_modal.py --run-name my_run` and watch logs in the [Modal dashboard](https://modal.com/apps).
+
+**3. Download checkpoints to your machine:**
+
+After training finishes:
+
+```bash
+modal volume get denseuav-training checkpoints/my_run/net_119.pth ./
+```
+
+To download the whole run folder:
+
+```bash
+modal volume get denseuav-training checkpoints/my_run ./checkpoints/my_run
+```
+
+**Optional:** To resume from a checkpoint on a future Modal run, use `--load_from` by extending `train_modal.py` to pass the path to the latest `net_*.pth` on the Volume.
 
 ---
 

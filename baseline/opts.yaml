@@ -5,7 +5,7 @@ batchsize: 16
 block: 1
 cj: 'no'
 cls_loss: CELoss
-data_dir: /home/dmmm/Dataset/DenseUAV/data_2022/train
+data_dir: /Users/chibangnguyen/ayai/UAV/denseUAV_baseline/data/DenseUAV_data/train
 droprate: 0.5
 erasing_p: 0.3
 feature_loss: WeightedSoftTripletLoss
