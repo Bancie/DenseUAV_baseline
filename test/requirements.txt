@@ -33,11 +33,11 @@ requests
 ipykernel
 
 # Not yet used
-tensorboard
+# tensorboard
 transformers
 evaluate
 huggingface_hub
-tensorflow
+# tensorflow
 torchview
 visualkeras 
 
@@ -47,3 +47,10 @@ datasets[vision]
 
 einops
 pytorch_metric_learning
+
+# Tracking experiments
+wandb
+aim
+
+# Marimo
+marimo[recommended]

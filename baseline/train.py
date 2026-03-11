@@ -22,6 +22,7 @@ Outputs:
 
 from __future__ import print_function, division
 import argparse
+import os
 import torch
 import torch.nn as nn
 
@@ -60,7 +61,7 @@ def get_parse():
                         help='gpu_ids: e.g. 0  0,1,2  0,2')
     parser.add_argument('--name', default='test',
                         type=str, help='output model name')
-    parser.add_argument('--data_dir', default='/home/dmmm/Dataset/DenseUAV/data_2022/train',
+    parser.add_argument('--data_dir', default='/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/data/DenseUAV_data/train',
                         type=str, help='training dir path')
     parser.add_argument('--num_worker', default=0, type=int, help='')
     parser.add_argument('--batchsize', default=2, type=int, help='batchsize')
@@ -95,6 +96,9 @@ def get_parse():
     parser.add_argument('--load_from', default="", type=str, help='')
     parser.add_argument('--backbone', default="ViTS-224", type=str, help='')
     parser.add_argument('--head', default="GeM", type=str, help='')
+    # new: configurable checkpoint root for Modal Volume mount
+    parser.add_argument('--checkpoint_dir', default='./checkpoints', type=str,
+                        help='root directory for checkpoints and logs (default: ./checkpoints)')
 
     opt = parser.parse_args()
     print(opt)
@@ -129,8 +133,10 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
             ``{'satellite': 54000, 'drone': 54000}``.  Used to normalise
             running statistics.
     """
-    logger = get_logger(
-        "checkpoints/{}/train.log".format(opt.name))
+    # new: use opt.checkpoint_dir so Modal can write to Volume
+    checkpoint_root = getattr(opt, 'checkpoint_dir', 'checkpoints')
+    log_path = os.path.join(checkpoint_root, opt.name, 'train.log')
+    logger = get_logger(log_path)
 
     # thop MACs computation (commented out for production runs)
     # macs, params = calc_flops_params(
@@ -221,8 +227,14 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
                             epoch_acc2, lr_backbone, lr_other))
 
         scheduler.step()
-        if epoch % 10 == 9 and epoch >= 110:
-            save_network(model, opt.name, epoch)
+        # old: chỉ lưu từ epoch >= 110
+        # if epoch % 10 == 9 and epoch >= 110:
+        #     save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
+        # old (mới hơn): lưu mỗi 10 epoch (9, 19, 29, ...)
+        # if epoch % 10 == 9:
+        #     save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
+        # new: lưu checkpoint mỗi epoch để có thể resume chi tiết nhất
+        save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
 
         time_elapsed = time.time() - since
         since = time.time()
@@ -243,8 +255,8 @@ if __name__ == '__main__':
 
     use_gpu = torch.cuda.is_available()
     opt.use_gpu = use_gpu
-    # set gpu ids
-    if len(gpu_ids) > 0:
+    # set gpu ids (only when CUDA is available to avoid CPU-only PyTorch error; safe on Modal)
+    if use_gpu and len(gpu_ids) > 0:
         torch.cuda.set_device(gpu_ids[0])
         cudnn.benchmark = True
 

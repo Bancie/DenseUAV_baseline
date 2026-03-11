@@ -52,15 +52,42 @@ class Dataloader_University(Dataset):
         dict_path = {}
         for name in names:
             dict_ = {}
+            # old code: gather all entries (including non-image files like .DS_Store)
+            # for cls_name in os.listdir(os.path.join(root, name)):
+            #     cls_dir = os.path.join(root, name, cls_name)
+            #     if not os.path.isdir(cls_dir):
+            #         continue
+            #     img_list = os.listdir(cls_dir)
+            #     img_path_list = [os.path.join(
+            #         root, name, cls_name, img) for img in img_list]
+            #     dict_[cls_name] = img_path_list
+
+            # new code: only treat subdirectories as class folders and only keep image files
             for cls_name in os.listdir(os.path.join(root, name)):
-                img_list = os.listdir(os.path.join(root, name, cls_name))
-                img_path_list = [os.path.join(
-                    root, name, cls_name, img) for img in img_list]
+                cls_dir = os.path.join(root, name, cls_name)
+                if not os.path.isdir(cls_dir):
+                    continue
+                # old: chỉ cho phép ảnh định dạng phổ biến JPG/PNG/BMP
+                # img_list = [
+                #     img for img in os.listdir(cls_dir)
+                #     if os.path.splitext(img.lower())[1] in {".jpg", ".jpeg", ".png", ".bmp"}
+                # ]
+                # new: thêm cả GeoTIFF để dùng trực tiếp .tif/.tiff
+                valid_exts = {".jpg", ".jpeg", ".png", ".bmp", ".tif", ".tiff"}
+                img_list = [
+                    img for img in os.listdir(cls_dir)
+                    if os.path.splitext(img.lower())[1] in valid_exts
+                ]
+                img_path_list = [
+                    os.path.join(root, name, cls_name, img) for img in img_list
+                ]
                 dict_[cls_name] = img_path_list
             dict_path[name] = dict_
 
         # Build a bidirectional index ↔ class-name mapping.
-        cls_names = os.listdir(os.path.join(root, names[0]))
+        # new: only directories (skip .DS_Store etc.)
+        cls_names = [x for x in os.listdir(os.path.join(root, names[0]))
+                     if os.path.isdir(os.path.join(root, names[0], x))]
         cls_names.sort()
         map_dict = {i: cls_names[i] for i in range(len(cls_names))}
 

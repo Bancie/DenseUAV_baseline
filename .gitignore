@@ -212,3 +212,17 @@ __marimo__/
 
 # Data
 data/
+
+# Model checkpoints and AI weights
+# (old) # no specific patterns for model files
+# (new) Ignore common deep learning model files
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.tflite
+*.h5
+*.pb
+*.sav
+*.joblib
+

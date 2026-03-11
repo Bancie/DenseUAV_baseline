@@ -79,7 +79,7 @@ def copy_file_or_tree(path, target_dir):
 def copyfiles2checkpoints(opt):
     """Snapshot the current source tree into the run's checkpoint directory.
 
-    Creates ``checkpoints/<opt.name>/`` (if absent) and copies training
+    Creates ``<checkpoint_dir>/<opt.name>/`` (if absent) and copies training
     scripts, dataset definitions, loss functions, model definitions, optimiser
     code, and tool utilities into it.  Also serialises the full ``opt``
     namespace to ``opts.yaml`` for reproducibility.
@@ -87,8 +87,13 @@ def copyfiles2checkpoints(opt):
     Args:
         opt (argparse.Namespace): Parsed training configuration.  Must contain
             an attribute ``name`` (str) that identifies the current run.
+            May contain ``checkpoint_dir`` (str) for configurable root; default ``checkpoints``.
     """
-    dir_name = os.path.join('checkpoints', opt.name)
+    # new: use opt.checkpoint_dir so Modal can write to Volume
+    checkpoint_root = getattr(opt, 'checkpoint_dir', 'checkpoints')
+    dir_name = os.path.join(checkpoint_root, opt.name)
+    if not os.path.isdir(checkpoint_root):
+        os.mkdir(checkpoint_root)
     if not os.path.isdir(dir_name):
         os.mkdir(dir_name)
     # record every run
@@ -165,8 +170,8 @@ def get_model_list(dirname, key):
 # ---------------------------
 
 
-def save_network(network, dirname, epoch_label):
-    """Serialise model weights to ``checkpoints/<dirname>/net_<epoch>.pth``.
+def save_network(network, dirname, epoch_label, checkpoint_root=None):
+    """Serialise model weights to ``<checkpoint_root>/<dirname>/net_<epoch>.pth``.
 
     The model is temporarily moved to CPU for saving and then moved back to
     GPU (if available) afterwards.
@@ -175,18 +180,23 @@ def save_network(network, dirname, epoch_label):
         network (torch.nn.Module): The model whose ``state_dict`` will be
             saved.
         dirname (str): Run name; the checkpoint is saved under
-            ``./checkpoints/<dirname>/``.
+            ``<checkpoint_root>/<dirname>/``.
         epoch_label (int | str): Used to construct the filename.  An integer
             value produces ``net_XXX.pth`` (zero-padded to 3 digits); a string
             value produces ``net_<epoch_label>.pth``.
+        checkpoint_root (str | None): Root directory for checkpoints; if None,
+            defaults to ``./checkpoints`` (for backward compatibility and Modal Volume).
     """
-    if not os.path.isdir('./checkpoints/'+dirname):
-        os.mkdir('./checkpoints/'+dirname)
+    # new: configurable checkpoint root for Modal
+    root = checkpoint_root if checkpoint_root is not None else './checkpoints'
+    out_dir = os.path.join(root, dirname)
+    if not os.path.isdir(out_dir):
+        os.makedirs(out_dir, exist_ok=True)
     if isinstance(epoch_label, int):
         save_filename = 'net_%03d.pth' % epoch_label
     else:
         save_filename = 'net_%s.pth' % epoch_label
-    save_path = os.path.join('./checkpoints', dirname, save_filename)
+    save_path = os.path.join(root, dirname, save_filename)
     torch.save(network.cpu().state_dict(), save_path)
     if torch.cuda.is_available:
         network.cuda()
