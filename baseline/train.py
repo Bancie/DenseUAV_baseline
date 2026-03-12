@@ -23,13 +23,14 @@ Outputs:
 from __future__ import print_function, division
 import argparse
 import os
+import time
+
 import torch
 import torch.nn as nn
 
 from torch.autograd import Variable
 from torch.cuda.amp import autocast, GradScaler
 import torch.backends.cudnn as cudnn
-import time
 from optimizers.make_optimizer import make_optimizer
 # from models.model import make_model
 from models.taskflow import make_model
@@ -96,6 +97,11 @@ def get_parse():
     parser.add_argument('--load_from', default="", type=str, help='')
     parser.add_argument('--backbone', default="ViTS-224", type=str, help='')
     parser.add_argument('--head', default="GeM", type=str, help='')
+    # new code: WandB configuration (optional, enabled by train_modal.py)
+    parser.add_argument('--wandb_project', default="", type=str,
+                        help='Weights & Biases project name (empty to disable by default)')
+    parser.add_argument('--wandb_mode', default="disabled", type=str,
+                        help='WandB mode: "disabled", "online", or "offline"')
     # new: configurable checkpoint root for Modal Volume mount
     parser.add_argument('--checkpoint_dir', default='./checkpoints', type=str,
                         help='root directory for checkpoints and logs (default: ./checkpoints)')
@@ -138,6 +144,42 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
     log_path = os.path.join(checkpoint_root, opt.name, 'train.log')
     logger = get_logger(log_path)
 
+    # new code: optional WandB run (shared for local and Modal training)
+    wandb_run = None
+    use_wandb = getattr(opt, "wandb_mode", "disabled") != "disabled"
+    if use_wandb:
+        try:
+            import wandb
+            wandb_project = opt.wandb_project or "denseuav-baseline"
+            # lightweight config: only the most important hyperparameters
+            wandb_config = {
+                "name": opt.name,
+                "data_dir": getattr(opt, "data_dir", None),
+                "backbone": getattr(opt, "backbone", None),
+                "head": getattr(opt, "head", None),
+                "batchsize": getattr(opt, "batchsize", None),
+                "h": getattr(opt, "h", None),
+                "w": getattr(opt, "w", None),
+                "lr": getattr(opt, "lr", None),
+                "num_epochs": getattr(opt, "num_epochs", None),
+                "cls_loss": getattr(opt, "cls_loss", None),
+                "feature_loss": getattr(opt, "feature_loss", None),
+                "kl_loss": getattr(opt, "kl_loss", None),
+                "autocast": getattr(opt, "autocast", None),
+            }
+            wandb_run = wandb.init(
+                project=wandb_project,
+                name=opt.name,
+                config=wandb_config,
+                mode=getattr(opt, "wandb_mode", "online"),
+            )
+            logger.info(f"WandB logging enabled (project={wandb_project}, run={opt.name}).")
+        except Exception as e:
+            # If WandB is misconfigured, fall back gracefully without breaking training
+            logger.warning(f"Failed to initialise WandB; proceeding without it. Error: {e}")
+            wandb_run = None
+            use_wandb = False
+
     # thop MACs computation (commented out for production runs)
     # macs, params = calc_flops_params(
     #     model, (1, 3, opt.h, opt.w), (1, 3, opt.h, opt.w))
@@ -148,98 +190,150 @@ def train_model(model, opt, optimizer, scheduler, dataloaders, dataset_sizes):
     since = time.time()
     scaler = GradScaler()
     nnloss = Loss(opt)
-    for epoch in range(num_epochs):
-        logger.info('Epoch {}/{}'.format(epoch, num_epochs - 1))
-        logger.info('-' * 50)
 
-        model.train(True)  # Set model to training mode
-        running_cls_loss = 0.0
-        running_triplet = 0.0
-        running_kl_loss = 0.0
-        running_loss = 0.0
-        running_corrects = 0.0
-        running_corrects2 = 0.0
-        for data, data3 in dataloaders:
-            # Retrieve drone and satellite input batches
-            inputs, labels = data
-            inputs3, labels3 = data3
-            now_batch_size = inputs.shape[0]
-            if now_batch_size < opt.batchsize:  # skip the last batch
-                continue
-            if use_gpu:
-                inputs = Variable(inputs.cuda().detach())
-                inputs3 = Variable(inputs3.cuda().detach())
-                labels = Variable(labels.cuda().detach())
-                labels3 = Variable(labels3.cuda().detach())
-            else:
-                inputs, labels = Variable(inputs), Variable(labels)
+    # new code: track best checkpoint in memory (best-checkpoint strategy)
+    best_loss = None
+    best_epoch = -1
+    best_state_dict = None
 
-            # Zero gradients before forward pass
-            optimizer.zero_grad()
+    try:
+        for epoch in range(num_epochs):
+            logger.info('Epoch {}/{}'.format(epoch, num_epochs - 1))
+            logger.info('-' * 50)
 
-            # Forward pass with optional mixed-precision context
-            with autocast():
-                outputs, outputs2 = model(inputs, inputs3)
+            model.train(True)  # Set model to training mode
+            running_cls_loss = 0.0
+            running_triplet = 0.0
+            running_kl_loss = 0.0
+            running_loss = 0.0
+            running_corrects = 0.0
+            running_corrects2 = 0.0
+            for data, data3 in dataloaders:
+                # Retrieve drone and satellite input batches
+                inputs, labels = data
+                inputs3, labels3 = data3
+                now_batch_size = inputs.shape[0]
+                if now_batch_size < opt.batchsize:  # skip the last batch
+                    continue
+                if use_gpu:
+                    inputs = Variable(inputs.cuda().detach())
+                    inputs3 = Variable(inputs3.cuda().detach())
+                    labels = Variable(labels.cuda().detach())
+                    labels3 = Variable(labels3.cuda().detach())
+                else:
+                    inputs, labels = Variable(inputs), Variable(labels)
 
-            # Compute composite loss
-            loss, cls_loss, f_triplet_loss, kl_loss = nnloss(
-                outputs, outputs2, labels, labels3)
+                # Zero gradients before forward pass
+                optimizer.zero_grad()
 
-            # Backward pass
-            if opt.autocast:
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
-            else:
-                loss.backward()
-                optimizer.step()
+                # Forward pass with optional mixed-precision context
+                with autocast():
+                    outputs, outputs2 = model(inputs, inputs3)
 
-            # Accumulate loss statistics
-            running_loss += loss.item() * now_batch_size
-            running_cls_loss += cls_loss.item()*now_batch_size
-            running_triplet += f_triplet_loss.item() * now_batch_size
-            running_kl_loss += kl_loss.item() * now_batch_size
+                # Compute composite loss
+                loss, cls_loss, f_triplet_loss, kl_loss = nnloss(
+                    outputs, outputs2, labels, labels3)
 
-            # Accumulate accuracy statistics
-            preds, preds2 = get_preds(outputs[0], outputs2[0])
-            if isinstance(preds, list) and isinstance(preds2, list):
-                running_corrects += sum([float(torch.sum(pred == labels.data))
-                                        for pred in preds])/len(preds)
-                running_corrects2 += sum([float(torch.sum(pred == labels3.data))
-                                         for pred in preds2]) / len(preds2)
-            else:
-                running_corrects += float(torch.sum(preds == labels.data))
-                running_corrects2 += float(torch.sum(preds2 == labels3.data))
+                # Backward pass
+                if opt.autocast:
+                    scaler.scale(loss).backward()
+                    scaler.step(optimizer)
+                    scaler.update()
+                else:
+                    loss.backward()
+                    optimizer.step()
 
-        # Compute epoch-level averages
-        epoch_cls_loss = running_cls_loss/dataset_sizes['satellite']
-        epoch_kl_loss = running_kl_loss / dataset_sizes['satellite']
-        epoch_triplet_loss = running_triplet/dataset_sizes['satellite']
-        epoch_loss = running_loss / dataset_sizes['satellite']
-        epoch_acc = running_corrects / dataset_sizes['satellite']
-        epoch_acc2 = running_corrects2 / dataset_sizes['satellite']
+                # Accumulate loss statistics
+                running_loss += loss.item() * now_batch_size
+                running_cls_loss += cls_loss.item() * now_batch_size
+                running_triplet += f_triplet_loss.item() * now_batch_size
+                running_kl_loss += kl_loss.item() * now_batch_size
 
-        lr_backbone = optimizer.state_dict()['param_groups'][0]['lr']
-        lr_other = optimizer.state_dict()['param_groups'][1]['lr']
-        logger.info('Loss: {:.4f} Cls_Loss:{:.4f} KL_Loss:{:.4f} Triplet_Loss {:.4f} Satellite_Acc: {:.4f}  Drone_Acc: {:.4f} lr_backbone:{:.6f} lr_other {:.6f}'
-                    .format(epoch_loss, epoch_cls_loss, epoch_kl_loss,
-                            epoch_triplet_loss, epoch_acc,
-                            epoch_acc2, lr_backbone, lr_other))
+                # Accumulate accuracy statistics
+                preds, preds2 = get_preds(outputs[0], outputs2[0])
+                if isinstance(preds, list) and isinstance(preds2, list):
+                    running_corrects += sum([float(torch.sum(pred == labels.data))
+                                            for pred in preds]) / len(preds)
+                    running_corrects2 += sum([float(torch.sum(pred == labels3.data))
+                                             for pred in preds2]) / len(preds2)
+                else:
+                    running_corrects += float(torch.sum(preds == labels.data))
+                    running_corrects2 += float(torch.sum(preds2 == labels3.data))
 
-        scheduler.step()
-        # old: chỉ lưu từ epoch >= 110
-        # if epoch % 10 == 9 and epoch >= 110:
-        #     save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
-        # old (mới hơn): lưu mỗi 10 epoch (9, 19, 29, ...)
-        # if epoch % 10 == 9:
-        #     save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
-        # new: lưu checkpoint mỗi epoch để có thể resume chi tiết nhất
-        save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
+            # Compute epoch-level averages
+            epoch_cls_loss = running_cls_loss / dataset_sizes['satellite']
+            epoch_kl_loss = running_kl_loss / dataset_sizes['satellite']
+            epoch_triplet_loss = running_triplet / dataset_sizes['satellite']
+            epoch_loss = running_loss / dataset_sizes['satellite']
+            epoch_acc = running_corrects / dataset_sizes['satellite']
+            epoch_acc2 = running_corrects2 / dataset_sizes['satellite']
 
-        time_elapsed = time.time() - since
-        since = time.time()
-        logger.info('Training complete in {:.0f}m {:.0f}s'.format(
-            time_elapsed // 60, time_elapsed % 60))
+            lr_backbone = optimizer.state_dict()['param_groups'][0]['lr']
+            lr_other = optimizer.state_dict()['param_groups'][1]['lr']
+            logger.info('Loss: {:.4f} Cls_Loss:{:.4f} KL_Loss:{:.4f} Triplet_Loss {:.4f} Satellite_Acc: {:.4f}  Drone_Acc: {:.4f} lr_backbone:{:.6f} lr_other {:.6f}'
+                        .format(epoch_loss, epoch_cls_loss, epoch_kl_loss,
+                                epoch_triplet_loss, epoch_acc,
+                                epoch_acc2, lr_backbone, lr_other))
+
+            # new code: update best checkpoint in memory based on lowest epoch_loss
+            if best_loss is None or epoch_loss < best_loss:
+                best_loss = epoch_loss
+                best_epoch = epoch
+                # store a CPU copy so we can safely load it back later
+                best_state_dict = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+
+            # new code: log metrics to WandB if enabled
+            if use_wandb and wandb_run is not None:
+                wandb_run.log(
+                    {
+                        "epoch": epoch,
+                        "train/loss": epoch_loss,
+                        "train/cls_loss": epoch_cls_loss,
+                        "train/kl_loss": epoch_kl_loss,
+                        "train/triplet_loss": epoch_triplet_loss,
+                        "train/satellite_acc": epoch_acc,
+                        "train/drone_acc": epoch_acc2,
+                        "lr/backbone": lr_backbone,
+                        "lr/other": lr_other,
+                    },
+                    step=epoch,
+                )
+
+            scheduler.step()
+            # old code: lưu từ epoch >= 110 mỗi 10 epoch
+            # if epoch % 10 == 9 and epoch >= 110:
+            #     save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
+            # old code: lưu mỗi 10 epoch (9, 19, 29, ...)
+            # if epoch % 10 == 9:
+            #     save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
+            # old code: lưu checkpoint mỗi epoch để có thể resume chi tiết nhất
+            # save_network(model, opt.name, epoch, checkpoint_root=checkpoint_root)
+
+            time_elapsed = time.time() - since
+            since = time.time()
+            logger.info('Training complete in {:.0f}m {:.0f}s'.format(
+                time_elapsed // 60, time_elapsed % 60))
+
+        # new code: after all epochs, save only the best model once
+        if best_state_dict is not None:
+            model.load_state_dict(best_state_dict)
+            save_network(model, opt.name, f"best_epoch_{best_epoch}", checkpoint_root=checkpoint_root)
+            logger.info(f"Saved best model from epoch {best_epoch} with Loss={best_loss:.4f}")
+            if use_wandb and wandb_run is not None:
+                wandb_run.log(
+                    {
+                        "best/epoch": best_epoch,
+                        "best/train_loss": best_loss,
+                    }
+                )
+    finally:
+        # ensure WandB run is properly closed even if an error occurs
+        if wandb_run is not None:
+            try:
+                wandb_run.finish()
+            except Exception:
+                # avoid raising in cleanup
+                pass
 
 
 if __name__ == '__main__':
