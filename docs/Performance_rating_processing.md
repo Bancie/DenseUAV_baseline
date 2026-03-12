@@ -1,0 +1,6 @@
+# Performance Rating Processing
+
+In the baseline, a list of backbones is configured in `/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/baseline/models/Backbone/backbone.py`. Therefore, the performance rating processing I have planned is described below:
+
+- Step 1: Log the performance for all loss functions in `/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/baseline/train.py` that have been set up and implemented by Modal AI in `/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/baseline/train_modal.py`. **Requirement**: Set up Weights & Biases (WandB) to provide visualization logging when running `/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/baseline/train_modal.py`. (new code: use optional WandB integration in `train.py`, automatically enabled when `train_modal.py` passes `--wandb_project` and `--wandb_mode online`.)
+- Step 2: Remove the practice of saving the model at every epoch in `/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/baseline/train.py (line 237)`, and instead use a **manual best-checkpoint strategy**: after each epoch, if the current epoch loss is better than the best so far, update the in-memory best model; then, when training finishes (either locally or via Modal), save only this best model once to the configured checkpoints directory / Modal Volume. (old code that saved every epoch is preserved as comments in `train.py`.)

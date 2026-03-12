@@ -28,6 +28,19 @@ CHECKPOINT_DIR = Path(DATA_VOLUME_MOUNT) / "checkpoints"
 # Image: PyTorch (CUDA) + baseline code. Run from repo root so "baseline" is the folder to copy.
 image = (
     modal.Image.debian_slim(python_version="3.11")
+    # old code: Modal image without WandB installed
+    # .pip_install(
+    #     "torch",
+    #     "torchvision",
+    #     "PyYAML",
+    #     "thop",
+    #     "timm",
+    #     "numpy",
+    #     "opencv-python-headless",
+    #     "matplotlib",
+    #     "Pillow",
+    # )
+    # new code: add wandb so training can log metrics successfully
     .pip_install(
         "torch",
         "torchvision",
@@ -38,6 +51,7 @@ image = (
         "opencv-python-headless",
         "matplotlib",
         "Pillow",
+        "wandb",
     )
     .add_local_dir(
         "baseline",
@@ -71,11 +85,20 @@ def _opts_to_args(opts_path):
     return args
 
 
+# old code: Modal function without explicit WandB secret attached
+# @app.function(
+#     volumes={DATA_VOLUME_MOUNT: volume},
+#     gpu="B200",
+#     timeout=86400,  # 24h max per run
+#     retries=modal.Retries(max_retries=2),
+# )
+# new code: attach WandB secret so WANDB_API_KEY is available inside the container
 @app.function(
     volumes={DATA_VOLUME_MOUNT: volume},
     gpu="B200",
     timeout=86400,  # 24h max per run
     retries=modal.Retries(max_retries=2),
+    secrets=[modal.Secret.from_name("wandb-secret")],
 )
 def train_on_modal(run_name: str):
     """Run baseline/train.py inside the container with data and checkpoints on the Volume."""
@@ -84,11 +107,15 @@ def train_on_modal(run_name: str):
         raise FileNotFoundError(f"opts.yaml not found at {opts_path}")
 
     extra_args = _opts_to_args(opts_path)
+    # new code: enable WandB logging explicitly for Modal runs
+    # WandB API key / login should be configured via environment or `wandb login` beforehand.
     cmd = (
         [sys.executable, "train.py",
          "--data_dir", str(DATA_DIR),
          "--checkpoint_dir", str(CHECKPOINT_DIR),
-         "--name", run_name]
+         "--name", run_name,
+         "--wandb_project", "denseuav-baseline",
+         "--wandb_mode", "online"]
         + extra_args
     )
     env = os.environ.copy()

@@ -1,0 +1,17 @@
+{
+  "os": "macOS-26.3.1-arm64-arm-64bit",
+  "python": "CPython 3.11.14",
+  "startedAt": "2026-03-12T06:44:39.135115Z",
+  "program": "/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test/wandb_test/wandb_test.py",
+  "codePath": "test/wandb_test/wandb_test.py",
+  "codePathLocal": "wandb_test/wandb_test.py",
+  "git": {
+    "remote": "https://github.com/Bancie/denseUAV_baseline.git",
+    "commit": "37b26266e6e3ad27fc423244ff998a1e2067d0d5"
+  },
+  "email": "chibangn1@gmail.com",
+  "root": "/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test",
+  "host": "Chis-MacBook-Pro.local",
+  "executable": "/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test/.venv/bin/python",
+  "writerId": "9ans5kf7t72c7bzis089j6sjlylyr2dt"
+}
