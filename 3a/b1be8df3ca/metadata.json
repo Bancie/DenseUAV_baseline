@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.4.7",
+  "checkpoint_id": "3ab1be8df3ca",
+  "strategy": "manual-commit",
+  "branch": "fix-folder/from-test-from-main/v1",
+  "checkpoints_count": 30,
+  "files_touched": [
+    "docs/Performance_rating_processing.md",
+    "test/.aim/meta/index/000032.sst",
+    "test/.aim/meta/index/000041.sst",
+    "test/.aim/meta/index/LOG.old.1773293557824985",
+    "test/.aim/meta/index/LOG.old.1773293557867241",
+    "test/.aim/meta/index/MANIFEST-000018",
+    "test/.aim/meta/index/MANIFEST-000036",
+    "test/.aim/meta/index/OPTIONS-000030",
+    "test/.aim/meta/index/OPTIONS-000039",
+    "test/wandb/latest-run",
+    "test/wandb/run-20260312_134439-6jgu93f3/files/config.yaml",
+    "test/wandb/run-20260312_134439-6jgu93f3/files/requirements.txt",
+    "test/wandb/run-20260312_134439-6jgu93f3/files/wandb-metadata.json",
+    "test/wandb/run-20260312_134439-6jgu93f3/files/wandb-summary.json",
+    "test/wandb/run-20260312_134439-6jgu93f3/run-6jgu93f3.wandb",
+    "test/wandb/run-20260312_140303-mj68vfzq/files/config.yaml",
+    "test/wandb/run-20260312_140303-mj68vfzq/files/requirements.txt",
+    "test/wandb/run-20260312_140303-mj68vfzq/files/wandb-metadata.json",
+    "test/wandb/run-20260312_140303-mj68vfzq/files/wandb-summary.json",
+    "test/wandb/run-20260312_140303-mj68vfzq/run-mj68vfzq.wandb",
+    "test/wandb_test/wandb_test.py"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3a/b1be8df3ca/0/metadata.json",
+      "transcript": "/3a/b1be8df3ca/0/full.jsonl",
+      "context": "",
+      "content_hash": "/3a/b1be8df3ca/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
