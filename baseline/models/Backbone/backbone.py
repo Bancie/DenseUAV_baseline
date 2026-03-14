@@ -175,6 +175,9 @@ class Backbone(nn.Module):
             chosen architecture (see above).
         """
         features = self.backbone.forward_features(image)
+        # new code: timm Swinv2 returns (N, H, W, C); convert to (N, C, H, W) for CNN-style heads
+        if getattr(self.opt, "backbone", None) in ("Swinv2S-256", "Swinv2T-256") and features.dim() == 4 and features.shape[-1] == self.output_channel:
+            features = features.permute(0, 3, 1, 2)
         return features
 
 
