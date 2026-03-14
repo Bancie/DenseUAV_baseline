@@ -1,6 +1,8 @@
 DA: false
 autocast: true
-backbone: ViTS-224
+# backbone: ViTS-224
+# backbone: Convnext-T # CNN architecture
+backbone: Swinv2S-256 # ViT architecture
 batchsize: 16
 block: 1
 cj: 'no'
@@ -10,9 +12,12 @@ droprate: 0.5
 erasing_p: 0.3
 feature_loss: WeightedSoftTripletLoss
 gpu_ids: '0'
-h: 224
-head: SingleBranch
-in_planes: 384
+# h: 224
+h: 256 # Swinv2S-256
+# head: SingleBranch
+head: SingleBranchCNN # CNN architecture, Swin architecture
+# in_planes: 384
+in_planes: 768 # Convnext-T, Swinv2S-256
 kl_loss: KLLoss
 load_from: 'no'
 lr: 0.003
@@ -28,5 +33,6 @@ rr: uav
 sample_num: 1
 share: true
 use_gpu: true
-w: 224
+# w: 224
+w: 256 # Swinv2S-256
 warm_epoch: 0
