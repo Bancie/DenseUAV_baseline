@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.7",
+  "checkpoint_id": "3467da91d54a",
+  "strategy": "manual-commit",
+  "branch": "fix-folder/from-test-from-main/v1",
+  "checkpoints_count": 28,
+  "files_touched": [
+    ".cursor/plans/performance-rating-logging-and-checkpointing_6e47104c.plan.md",
+    ".cursor/plans/test_modal.py_and_modal_dict_3e919b7b.plan.md",
+    ".cursor/plans/training_on_modal_gpu_a08756ff.plan.md",
+    "baseline/test_modal.py",
+    "test/uml/phase3opt1.puml",
+    "test/uml/phase3opt2.png",
+    "test/uml/phase3opt2.puml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/34/67da91d54a/0/metadata.json",
+      "transcript": "/34/67da91d54a/0/full.jsonl",
+      "context": "",
+      "content_hash": "/34/67da91d54a/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 0,
+    "cache_creation_tokens": 0,
+    "cache_read_tokens": 0,
+    "output_tokens": 0,
+    "api_call_count": 0
+  }
+}
