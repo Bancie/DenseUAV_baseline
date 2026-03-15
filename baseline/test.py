@@ -97,58 +97,6 @@ if len(gpu_ids) > 0 and torch.cuda.is_available():
     torch.cuda.set_device(gpu_ids[0])
     cudnn.benchmark = True
 
-data_transforms = transforms.Compose([
-        transforms.Resize((opt.h, opt.w), interpolation=3),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
-
-data_query_transforms = transforms.Compose([
-        transforms.Resize((opt.h, opt.w), interpolation=3),
-        # Query_transforms(pad=10,size=opt.w),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-])
-
-
-
-data_dir = test_dir
-
-# # Requried two folder query_satellite and query_drone
-# image_datasets_query = {x: datasets.ImageFolder(os.path.join(data_dir,x) ,data_query_transforms) for x in ['query_satellite','query_drone']}
-
-# # Required two folder gallery_satellite and gallery_drone
-# image_datasets_gallery = {x: datasets.ImageFolder(os.path.join(data_dir,x) ,data_transforms) for x in ['gallery_satellite','gallery_drone']}
-
-# image_datasets = {**image_datasets_query, **image_datasets_gallery}
-
-# # Required four folder gallery_satellite, gallery_drone, query_satellite, query_drone
-# dataloaders = {x: torch.utils.data.DataLoader(image_datasets[x], batch_size=opt.batchsize,
-#                                          shuffle=False, num_workers=opt.num_worker) for x in ['gallery_satellite', 'gallery_drone','query_satellite','query_drone']}
-
-# Mode 1 only: required folders query_drone and gallery_satellite
-image_datasets = {
-    'query_drone': datasets.ImageFolder(
-        os.path.join(data_dir, 'query_drone'),
-        data_query_transforms,
-    ),
-    'gallery_satellite': datasets.ImageFolder(
-        os.path.join(data_dir, 'gallery_satellite'),
-        data_transforms,
-    ),
-}
-dataloaders = {
-    x: torch.utils.data.DataLoader(
-        image_datasets[x],
-        batch_size=opt.batchsize,
-        shuffle=False,
-        num_workers=opt.num_worker,
-    )
-    for x in ['query_drone', 'gallery_satellite']
-}
-
-use_gpu = torch.cuda.is_available()
-
 def fliplr(img):
     """Flip a batch of images horizontally.
 
@@ -265,63 +213,102 @@ def get_id(img_path):
         paths.append(path)
     return labels, paths
 
-######################################################################
-# Load Collected data Trained model
-print('-------test-----------')
 
-model = load_network(opt)
-print("Results for checkpoint: %s" % opt.checkpoint)
-# model.classifier.classifier = nn.Sequential()
-model = model.eval()
-if use_gpu:
-    model = model.cuda()
+def run_extraction(opt):
+    """Run full extraction pipeline: load model, build dataloaders (mode 1 only),
+    extract query/gallery features, return result dict. Does not write any files.
 
-# Extract feature
-since = time.time()
+    Caller can then save to .mat (e.g. savemat('pytorch_result_1.mat', result))
+    or store in Modal Dict. Uses global opt inside extract_feature (opt.block);
+    we set the current module's opt to the given opt so that extract_feature sees it.
+    """
+    # So extract_feature(model, ...) can read opt.block from this module
+    import sys
+    sys.modules[__name__].opt = opt
 
-if opt.mode==1:
+    data_transforms = transforms.Compose([
+        transforms.Resize((opt.h, opt.w), interpolation=3),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+    data_query_transforms = transforms.Compose([
+        transforms.Resize((opt.h, opt.w), interpolation=3),
+        transforms.ToTensor(),
+        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
+    ])
+    data_dir = opt.test_dir
+
+    # Mode 1 only: query_drone, gallery_satellite
+    image_datasets = {
+        'query_drone': datasets.ImageFolder(
+            os.path.join(data_dir, 'query_drone'),
+            data_query_transforms,
+        ),
+        'gallery_satellite': datasets.ImageFolder(
+            os.path.join(data_dir, 'gallery_satellite'),
+            data_transforms,
+        ),
+    }
+    dataloaders = {
+        x: torch.utils.data.DataLoader(
+            image_datasets[x],
+            batch_size=opt.batchsize,
+            shuffle=False,
+            num_workers=opt.num_worker,
+        )
+        for x in ['query_drone', 'gallery_satellite']
+    }
+
+    use_gpu = torch.cuda.is_available()
+    model = load_network(opt)
+    print("Results for checkpoint: %s" % opt.checkpoint)
+    model = model.eval()
+    if use_gpu:
+        model = model.cuda()
+
     query_name = 'query_drone'
     gallery_name = 'gallery_satellite'
-elif opt.mode==2:
-    query_name = 'query_satellite'
-    gallery_name = 'gallery_drone'
-else:
-    raise Exception("opt.mode is not required")
+    which_gallery = which_view(gallery_name)
+    which_query = which_view(query_name)
+    print('%d -> %d:' % (which_query, which_gallery))
+    print(query_name.split("_")[-1], "->", gallery_name.split("_")[-1])
 
+    gallery_path = image_datasets[gallery_name].imgs
+    query_path = image_datasets[query_name].imgs
+    gallery_label, gallery_path = get_id(gallery_path)
+    query_label, query_path = get_id(query_path)
 
-which_gallery = which_view(gallery_name)
-which_query = which_view(query_name)
-print('%d -> %d:'%(which_query, which_gallery))
-print(query_name.split("_")[-1],"->",gallery_name.split("_")[-1])
-
-gallery_path = image_datasets[gallery_name].imgs
-f = open('gallery_name.txt','w')
-for p in gallery_path:
-    f.write(p[0]+'\n')
-query_path = image_datasets[query_name].imgs
-f = open('query_name.txt','w')
-for p in query_path:
-    f.write(p[0]+'\n')
-
-gallery_label, gallery_path  = get_id(gallery_path)
-query_label, query_path  = get_id(query_path)
-
-if __name__ == "__main__":
+    since = time.time()
     with torch.no_grad():
-        query_feature = extract_feature(model,dataloaders[query_name], which_query)
-        gallery_feature = extract_feature(model,dataloaders[gallery_name], which_gallery)
-
-    # For street-view image, we use the avg feature as the final feature.
-
+        query_feature = extract_feature(model, dataloaders[query_name], which_query)
+        gallery_feature = extract_feature(model, dataloaders[gallery_name], which_gallery)
     time_elapsed = time.time() - since
     print('Test complete in {:.0f}m {:.0f}s'.format(
         time_elapsed // 60, time_elapsed % 60))
 
+    result = {
+        'gallery_f': gallery_feature.numpy(),
+        'gallery_label': gallery_label,
+        'gallery_path': gallery_path,
+        'query_f': query_feature.numpy(),
+        'query_label': query_label,
+        'query_path': query_path,
+    }
+    return result
+
+
+if __name__ == "__main__":
+    # Load Collected data Trained model
+    print('-------test-----------')
+    result = run_extraction(opt)
+
     # Save to Matlab for check
-    result = {'gallery_f':gallery_feature.numpy(),'gallery_label':gallery_label,'gallery_path':gallery_path,'query_f':query_feature.numpy(),'query_label':query_label, 'query_path':query_path}
-    scipy.io.savemat('pytorch_result_{}.mat'.format(opt.mode),result)
+    scipy.io.savemat('pytorch_result_1.mat', result)
 
-
-    # print(opt.name)
-    # result = 'result.txt'
-    # os.system('python evaluate_gpu.py | tee -a %s'%result)
+    # gallery_name.txt / query_name.txt for downstream
+    with open('gallery_name.txt', 'w') as f:
+        for p in result['gallery_path']:
+            f.write(p + '\n')
+    with open('query_name.txt', 'w') as f:
+        for p in result['query_path']:
+            f.write(p + '\n')

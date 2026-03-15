@@ -49,6 +49,7 @@ baseline/
 ├── opts.yaml                   # Default hyperparameter configuration
 ├── train_test_local.sh         # Convenience shell script (train → test → evaluate)
 ├── train_modal.py              # Run training on Modal GPU (cloud)
+├── test_modal.py               # Run feature extraction on Modal, store in Modal Dict
 │
 ├── net_119.pth                 # Pretrained checkpoint (epoch 119)
 ├── pytorch_result_1.mat        # Saved features from test.py
@@ -525,6 +526,42 @@ modal volume get denseuav-training checkpoints/my_run ./checkpoints/my_run
 ```
 
 **Optional:** To resume from a checkpoint on a future Modal run, use `--load_from` by extending `train_modal.py` to pass the path to the latest `net_*.pth` on the Volume.
+
+### Testing (extraction) on Modal GPU (`test_modal.py`)
+
+Run feature extraction on Modal and store results in a **Modal Dict** instead of a `.mat` file. Test data and the model checkpoint must already be on the same volume (e.g. test data at `data/test` with `query_drone` and `gallery_satellite`; checkpoint at `checkpoints/<run_name>/<checkpoint>.pth`).
+
+**1. Set arguments** in code (in `main()` in `baseline/test_modal.py`) or pass via CLI:
+
+- `run_name`: run name (checkpoint path on volume: `checkpoints/<run_name>/<checkpoint>`).
+- `checkpoint`: checkpoint filename (e.g. `net_best_epoch_116.pth`).
+- `test_dir`: path **on the volume** to the test root (e.g. `data/test`).
+- `batchsize`: batch size (default 128).
+
+**2. Run extraction (from repo root):**
+
+```bash
+modal run baseline/test_modal.py
+# Or override defaults, e.g.:
+modal run baseline/test_modal.py --run-name Swinv2S_256_my_fifth_run --checkpoint net_best_epoch_116.pth --test-dir data/test
+```
+
+**3. Where results are stored**
+
+- **Dict name:** `denseuav-test-results` (persisted Modal Dict).
+- **Key format:** `{run_name}_mode_1` (e.g. `Swinv2S_256_my_fifth_run_mode_1`).
+- **Value:** dict with keys `gallery_f`, `gallery_label`, `gallery_path`, `query_f`, `query_label`, `query_path` (same format as `pytorch_result_1.mat`).
+
+**4. Reading results from the Dict (e.g. for evaluation)**
+
+In Python (with `modal` and the same env):
+
+```python
+import modal
+d = modal.Dict.from_name("denseuav-test-results")
+result = d["Swinv2S_256_my_fifth_run_mode_1"]  # or your run_name_mode_1
+# result["query_f"], result["gallery_f"], etc. — use like the .mat contents for evaluate_gpu.py
+```
 
 ---
 

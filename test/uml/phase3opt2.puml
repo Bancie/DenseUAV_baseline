@@ -1,0 +1,54 @@
+@startuml
+' Phase 1: baseline testing flow
+title Evaluation metrics on 3 backbones (Option 2)
+|Baseline|
+start
+fork
+|Modal|
+repeat :Save to Volume;
+backward :Put Test data;
+note right
+""data/DenseUAV_data/test""
+end note
+repeat while (Test data is empty) is (no)
+-> yes;
+|Baseline|
+fork again
+|Modal|
+:Get model;
+note right
+SwinV2, ViT, ConvNeXt
+end note
+|Baseline|
+end fork
+:Refactor for Embedding on Modal;
+note right
+- Test data: ""Modal volume""
+(""gallery_satellite"", ""query_drone"")
+- Model: ""SwinV2.pth, ViT.pth, ConvNeXt.pth""
+end note
+|Modal|
+:Run Embedding;
+:Save Embedding database as Modal dict;
+note right
+**dict**: SwinV2, ViT, ConvNeXt
+end note
+|Baseline|
+:Fix code for reading Modal dict instead of Matlab;
+:Refactor for W&B logging;
+|Baseline|
+fork
+:Run Recall@K Evaluation;
+|W&B|
+:Log the performance results of Recall@K;
+fork again
+|Baseline|
+:Run SDM@K Evaluation;
+|W&B|
+:Log the performance results of SDM@K;
+|Baseline|
+end fork
+|W&B|
+:Present the Evaluation metrics performance results of Recall@K and SDM@K;
+stop
+@enduml
