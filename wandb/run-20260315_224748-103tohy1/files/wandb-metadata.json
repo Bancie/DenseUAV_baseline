@@ -1,0 +1,35 @@
+{
+  "os": "macOS-26.3.1-arm64-arm-64bit",
+  "python": "CPython 3.11.14",
+  "startedAt": "2026-03-15T15:47:48.165806Z",
+  "args": [
+    "--result_key",
+    "Swinv2S_256_mode_1",
+    "--wandb_mode",
+    "online"
+  ],
+  "program": "/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/baseline/evaluate_gpu.py",
+  "codePath": "baseline/evaluate_gpu.py",
+  "codePathLocal": "baseline/evaluate_gpu.py",
+  "git": {
+    "remote": "https://github.com/Bancie/denseUAV_baseline.git",
+    "commit": "b9a2c16587013cb8157feb432fd03d8809e8f6f8"
+  },
+  "email": "chibangn1@gmail.com",
+  "root": "/Users/chibangnguyen/ayai/UAV/denseUAV_baseline",
+  "host": "Chis-MacBook-Pro.local",
+  "executable": "/Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test/.venv/bin/python",
+  "cpu_count": 8,
+  "cpu_count_logical": 8,
+  "disk": {
+    "/": {
+      "total": "494384795648",
+      "used": "433866985472"
+    }
+  },
+  "memory": {
+    "total": "17179869184"
+  },
+  "apple": {},
+  "writerId": "eoljcdf5bvg10l643zyx0hey0s6l8u00"
+}

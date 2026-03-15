@@ -9,10 +9,10 @@ Usage (from repo root):
   - On volume: checkpoints/<run_name>/<checkpoint> (leave checkpoint_baseline_path empty).
   - In workspace (bundled with baseline): set checkpoint_baseline_path e.g. "imacs/Swinv2S_256.pth".
 
-  For 3 different architectures (cách 1 – không bắt buộc đổi code): chỉnh opts.yaml và
-  run_name / checkpoint_baseline_path trong main() rồi chạy 3 lần. Sau mỗi lần sửa opts.yaml,
-  nên sửa nhẹ trong file này (vd. thêm/xóa comment) để Modal rebuild image và container
-  dùng opts mới. Hoặc set opts_volume_path để đọc opts từ volume (không cần rebuild).
+  For 3 different architectures (Method 1 – no code change required): edit opts.yaml and
+  run_name / checkpoint_baseline_path in main(), then run this script 3 times. After each change to opts.yaml,
+  make a minor change in this file (e.g. add/remove a comment) so that Modal rebuilds the image and container
+  with the updated opts. Alternatively, set opts_volume_path to load opts from the volume (no rebuild required).
 
   Results are stored in Modal Dict "denseuav-test-results" under key "{run_name}_mode_1".
   To read later: modal.Dict.from_name("denseuav-test-results")[key] gives the result dict

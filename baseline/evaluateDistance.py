@@ -1,8 +1,8 @@
 """GPS-distance-based evaluation metrics (SDM@K and MA@K) for DenseUAV.
 
-Loads pre-computed query/gallery features from a ``.mat`` file (produced by
-``test.py``) together with GPS coordinates from ``Dense_GPS_ALL.txt``, then
-computes two distance-aware retrieval metrics:
+Loads pre-computed query/gallery features from Modal Dict (from ``test_modal.py``)
+together with GPS coordinates from ``Dense_GPS_ALL.txt``, then computes two
+distance-aware retrieval metrics:
 
 - **SDM@K** (Soft Distance Metric at K): weighted exponential decay score
   averaged over the top-K retrieved gallery items.
@@ -10,15 +10,10 @@ computes two distance-aware retrieval metrics:
   gallery is within K metres of the true location.
 
 Example:
-    Evaluate drone-to-satellite retrieval (mode 1)::
+    Evaluate from Modal Dict (mode 1)::
 
-        python evaluateDistance.py \\
-            --root_dir /path/to/DenseUAV/ \\
-            --mode 1 --K 1 3 5 10 --M 5000
-
-    Evaluate satellite-to-drone retrieval (mode 2)::
-
-        python evaluateDistance.py --root_dir /path/to/DenseUAV/ --mode 2
+        python evaluateDistance.py --result_key Swinv2S_256_mode_1 --root_dir /path/to/DenseUAV/
+        python evaluateDistance.py --run_name ViTS_224 --root_dir /path/to/DenseUAV/ --K 1 3 5 10 --M 5000
 
 Outputs:
     - Prints SDM@K values for each K in ``--K`` to stdout.
@@ -27,7 +22,7 @@ Outputs:
 """
 
 import argparse
-import scipy.io
+import sys
 import torch
 import numpy as np
 import os
@@ -41,14 +36,54 @@ import math
 
 #######################################################################
 # Evaluate
+def _normalize_labels(labels):
+    """Ensure labels are 1D numpy array (list or array from Modal Dict)."""
+    a = np.atleast_1d(labels)
+    return a.flatten()
+
+
+def load_result_from_modal_dict(result_key, dict_name):
+    """Load query/gallery result from Modal Dict only (no .mat).
+
+    Returns (data_dict, use_paths_from_result). use_paths_from_result is always True.
+    data_dict has: query_f, gallery_f, query_label, gallery_label, query_path, gallery_path.
+    """
+    import modal
+    print(f"Loading '{result_key}' from Modal Dict '{dict_name}'... (may take a minute for large results, e.g. ViTS_224)")
+    d = modal.Dict.from_name(dict_name, create_if_missing=False)
+    result = d[result_key]
+    print(f"Loaded '{result_key}'.")
+    query_f = np.asarray(result["query_f"])
+    gallery_f = np.asarray(result["gallery_f"])
+    query_label = _normalize_labels(result["query_label"])
+    gallery_label = _normalize_labels(result["gallery_label"])
+    data = {
+        "query_f": query_f,
+        "gallery_f": gallery_f,
+        "query_label": query_label,
+        "gallery_label": gallery_label,
+        "query_path": result["query_path"],
+        "gallery_path": result["gallery_path"],
+    }
+    return data, True
+
+
 parser = argparse.ArgumentParser(description='Demo')
 # parser.add_argument('--query_index', default=10, type=int, help='test_image_index')
 parser.add_argument(
     '--root_dir', default='/home/dmmm/Dataset/DenseUAV/data_2022/', type=str, help='./test_data')
-parser.add_argument('--K', default=[1, 3, 5, 10], type=str, help='./test_data')
-parser.add_argument('--M', default=5e3, type=str, help='./test_data')
+# new code: K as list of int (old: default=[1, 3, 5, 10], type=str)
+parser.add_argument('--K', nargs='*', type=int, default=[1, 3, 5, 10], help='K values for SDM@K to print')
+# new code: M as float (old: default=5e3, type=str)
+parser.add_argument('--M', default=5e3, type=float, help='Scale factor for SDM')
 parser.add_argument('--mode', default="1", type=str,
                     help='1:drone->satellite 2:satellite->drone')
+# new code: Modal Dict only (no .mat)
+parser.add_argument('--run_name', default='', type=str, help='Run name; key becomes run_name_mode_1')
+parser.add_argument('--result_key', default='', type=str, help='Modal Dict key (overrides run_name if set)')
+parser.add_argument('--dict_name', default='denseuav-test-results', type=str, help='Modal Dict name')
+parser.add_argument('--wandb_project', default='denseuav-eval', type=str, help='W&B project')
+parser.add_argument('--wandb_mode', default='disabled', type=str, help='W&B mode: disabled, online, offline')
 opts = parser.parse_args()
 
 opts.config = os.path.join(opts.root_dir, "Dense_GPS_ALL.txt")
@@ -68,9 +103,10 @@ else:
     gallery_name = 'gallery_drone'
     query_name = 'query_satellite'
 
+# Build image_datasets only when not loading paths from Modal Dict (needed for .mat path lookup)
+# Modal Dict only: paths come from result, no image_datasets needed for path lookup
 data_dir = opts.test_dir
-image_datasets = {x: datasets.ImageFolder(os.path.join(data_dir, x)) for x in [
-    gallery_name, query_name]}
+image_datasets = {}
 
 
 #####################################################################
@@ -91,26 +127,23 @@ def imshow(path, title=None):
 
 
 ######################################################################
-if opts.mode == "1":
-    result = scipy.io.loadmat('pytorch_result_1.mat')
-else:
-    result = scipy.io.loadmat('pytorch_result_2.mat')
-query_feature = torch.FloatTensor(result['query_f'])
-query_label = result['query_label'][0]
-gallery_feature = torch.FloatTensor(result['gallery_f'])
-gallery_label = result['gallery_label'][0]
+# Modal Dict only (no .mat)
+result_key = getattr(opts, "result_key", "") or (f"{getattr(opts, 'run_name', '')}_mode_1" if getattr(opts, "run_name", "") else "")
+if not result_key:
+    sys.exit("Error: provide --run_name or --result_key (e.g. --run_name Swinv2S_256 or --result_key ViTS_224_mode_1)")
 
-multi = os.path.isfile('multi_query.mat')
+data, _ = load_result_from_modal_dict(result_key, getattr(opts, "dict_name", "denseuav-test-results"))
+query_feature = torch.FloatTensor(data["query_f"])
+query_label = data["query_label"]
+gallery_feature = torch.FloatTensor(data["gallery_f"])
+gallery_label = data["gallery_label"]
+query_paths = data["query_path"]
+gallery_paths = data["gallery_path"]
 
-if multi:
-    m_result = scipy.io.loadmat('multi_query.mat')
-    mquery_feature = torch.FloatTensor(m_result['mquery_f'])
-    mquery_cam = m_result['mquery_cam'][0]
-    mquery_label = m_result['mquery_label'][0]
-    mquery_feature = mquery_feature.cuda()
-
-query_feature = query_feature.cuda()
-gallery_feature = gallery_feature.cuda()
+# device: CPU when CUDA not available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+query_feature = query_feature.to(device)
+gallery_feature = gallery_feature.to(device)
 
 
 #######################################################################
@@ -148,8 +181,8 @@ def sort_img(qf, ql, gf, gl, K):
 
     # good_index = np.setdiff1d(query_index, camera_index, assume_unique=True)
     junk_index = np.argwhere(gl == -1)
-
-    mask = np.in1d(index, junk_index, invert=True)
+    # new code: np.isin (old: np.in1d deprecated)
+    mask = np.isin(index, junk_index, invert=True)
     index = index[mask]
     return index[:K]
 
@@ -198,7 +231,10 @@ def euclideanDistance(query, gallery):
     A = gallery - query
     A_T = A.transpose()
     distance = np.matmul(A, A_T)
-    mask = np.eye(distance.shape[0], dtype=np.bool8)
+    # old code: np.bool8 removed in NumPy 2.x (AttributeError)
+    # mask = np.eye(distance.shape[0], dtype=np.bool8)
+    # new code: use np.bool_ for compatibility with NumPy 2.x
+    mask = np.eye(distance.shape[0], dtype=np.bool_)
     distance = distance[mask]
     distance = np.sqrt(distance.reshape(-1))
     return distance
@@ -261,7 +297,7 @@ def latlog2meter(lata, loga, latb, logb):
     return distance
 
 
-def evaluate_SDM(indexOfTopK, queryIndex, K):
+def evaluate_SDM(indexOfTopK, queryIndex, K, query_paths=None, gallery_paths=None):
     """Compute the SDM@K score for a single query.
 
     Looks up GPS coordinates for the query and its top-K gallery results,
@@ -271,49 +307,54 @@ def evaluate_SDM(indexOfTopK, queryIndex, K):
     Args:
         indexOfTopK (numpy.ndarray): Gallery indices of the top-K ranked
             results (output of :func:`sort_img`).
-        queryIndex (int): Index of the query image within
-            ``image_datasets[query_name].imgs``.
+        queryIndex (int): Index of the query image.
         K (int): Number of top results to include in the score.
+        query_paths (list, optional): When loading from Modal Dict, paths for queries.
+        gallery_paths (list, optional): When loading from Modal Dict, paths for gallery.
 
     Returns:
         float: SDM@K score for this query; higher is better.
     """
-    query_path, _ = image_datasets[query_name].imgs[queryIndex]
-    galleryTopKPath = [image_datasets[gallery_name].imgs[i][0]
-                       for i in indexOfTopK[:K]]
-    # get position information including latitude and longitude
+    # new code: use paths from result when provided (Modal Dict); else image_datasets
+    if query_paths is not None and gallery_paths is not None:
+        query_path = query_paths[queryIndex]
+        galleryTopKPath = [gallery_paths[idx] for idx in indexOfTopK[:K]]
+    else:
+        query_path, _ = image_datasets[query_name].imgs[queryIndex]
+        galleryTopKPath = [image_datasets[gallery_name].imgs[i][0] for i in indexOfTopK[:K]]
     queryPosInfo = getLatitudeAndLongitude(query_path)
     galleryTopKPosInfo = getLatitudeAndLongitude(galleryTopKPath)
-    # compute Euclidean distance of query and gallery
     distance = euclideanDistance(queryPosInfo, galleryTopKPosInfo)
-    # compute single query evaluate result
     P = evaluateSingle(distance, K)
     return P
 
 
-def evaluate_MA(indexOfTop1, queryIndex):
+def evaluate_MA(indexOfTop1, queryIndex, query_paths=None, gallery_paths=None):
     """Compute the geodesic distance (metres) between a query and its top-1 gallery match.
 
     Used to build the MA@K curve: a query contributes to MA@K if the returned
     distance is less than K metres.
 
     Args:
-        indexOfTop1 (int): Gallery index of the top-1 ranked result for this
-            query.
-        queryIndex (int): Index of the query image within
-            ``image_datasets[query_name].imgs``.
+        indexOfTop1 (int): Gallery index of the top-1 ranked result for this query.
+        queryIndex (int): Index of the query image.
+        query_paths (list, optional): When loading from Modal Dict, paths for queries.
+        gallery_paths (list, optional): When loading from Modal Dict, paths for gallery.
 
     Returns:
         float: Haversine distance in metres between the query GPS position
             and the top-1 gallery GPS position.
     """
-    query_path, _ = image_datasets[query_name].imgs[queryIndex]
-    galleryTopKPath = image_datasets[gallery_name].imgs[indexOfTop1][0]
-    # get position information including latitude and longitude
+    # new code: use paths from result when provided (Modal Dict); else image_datasets
+    if query_paths is not None and gallery_paths is not None:
+        query_path = query_paths[queryIndex]
+        galleryTopKPath = gallery_paths[indexOfTop1]
+    else:
+        query_path, _ = image_datasets[query_name].imgs[queryIndex]
+        galleryTopKPath = image_datasets[gallery_name].imgs[indexOfTop1][0]
     queryPosInfo = getLatitudeAndLongitude(query_path)
     galleryTopKPosInfo = getLatitudeAndLongitude(galleryTopKPath)
-    # get real distance
-    distance_meter = latlog2meter(queryPosInfo[1],queryPosInfo[0],galleryTopKPosInfo[1],galleryTopKPosInfo[0])
+    distance_meter = latlog2meter(queryPosInfo[1], queryPosInfo[0], galleryTopKPosInfo[1], galleryTopKPosInfo[0])
     return distance_meter
 
 
@@ -328,7 +369,10 @@ SDM_dict = {}
 for K in tqdm(range(1, 101, 1)):
     metric = 0
     for i in range(len(query_label)):
-        P_ = evaluate_SDM(indexOfTopK_list[i], i, K)
+        P_ = evaluate_SDM(
+            indexOfTopK_list[i], i, K,
+            query_paths=query_paths, gallery_paths=gallery_paths,
+        )
         metric += P_
     metric = metric / len(query_label)
     if K in opts.K:
@@ -336,18 +380,56 @@ for K in tqdm(range(1, 101, 1)):
     SDM_dict[K] = metric
 
 MA_dict = {}
-for meter in tqdm(range(1,101,1)):
+for meter in tqdm(range(1, 101, 1)):
     MA_K = 0
     for i in range(len(query_label)):
-        MA_meter = evaluate_MA(indexOfTopK_list[i][0],i)
-        if MA_meter<meter:
-            MA_K+=1
-    MA_K = MA_K/len(query_label)
-    MA_dict[meter]=MA_K
-        
+        MA_meter = evaluate_MA(
+            indexOfTopK_list[i][0], i,
+            query_paths=query_paths, gallery_paths=gallery_paths,
+        )
+        if MA_meter < meter:
+            MA_K += 1
+    MA_K = MA_K / len(query_label)
+    MA_dict[meter] = MA_K
 
-with open("SDM@K(1,100).json", 'w') as F:
+with open("SDM@K(1,100).json", "w") as F:
     json.dump(SDM_dict, F, indent=4)
 
-with open("MA@K(1,100)", 'w') as F:
+with open("MA@K(1,100)", "w") as F:
     json.dump(MA_dict, F, indent=4)
+
+# new code: W&B logging
+use_wandb = getattr(opts, "wandb_mode", "disabled") != "disabled"
+wandb_run = None
+if use_wandb:
+    try:
+        import wandb
+        wandb_run = wandb.init(
+            project=getattr(opts, "wandb_project", "denseuav-eval"),
+            name=result_key,
+            config={
+                "result_key": result_key,
+                "root_dir": opts.root_dir,
+                "mode": opts.mode,
+                "K": opts.K,
+                "M": opts.M,
+            },
+            mode=getattr(opts, "wandb_mode", "disabled"),
+        )
+        log_dict = {}
+        for k in opts.K:
+            if k in SDM_dict:
+                log_dict["SDM@{}".format(k)] = SDM_dict[k]
+        for m in [1, 5, 10]:
+            if m in MA_dict:
+                log_dict["MA@{}m".format(m)] = MA_dict[m]
+        if log_dict:
+            wandb_run.log(log_dict, step=0)
+    except Exception as e:
+        print("WandB init failed:", e)
+        wandb_run = None
+if wandb_run is not None:
+    try:
+        wandb_run.finish()
+    except Exception:
+        pass
