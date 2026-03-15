@@ -1,0 +1,55 @@
+_wandb:
+    value:
+        cli_version: 0.25.0
+        e:
+            eoljcdf5bvg10l643zyx0hey0s6l8u00:
+                apple: {}
+                args:
+                    - --result_key
+                    - Swinv2S_256_mode_1
+                    - --wandb_mode
+                    - online
+                codePath: baseline/evaluate_gpu.py
+                codePathLocal: baseline/evaluate_gpu.py
+                cpu_count: 8
+                cpu_count_logical: 8
+                disk:
+                    /:
+                        total: "494384795648"
+                        used: "433866985472"
+                email: chibangn1@gmail.com
+                executable: /Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test/.venv/bin/python
+                git:
+                    commit: b9a2c16587013cb8157feb432fd03d8809e8f6f8
+                    remote: https://github.com/Bancie/denseUAV_baseline.git
+                host: Chis-MacBook-Pro.local
+                memory:
+                    total: "17179869184"
+                os: macOS-26.3.1-arm64-arm-64bit
+                program: /Users/chibangnguyen/ayai/UAV/denseUAV_baseline/baseline/evaluate_gpu.py
+                python: CPython 3.11.14
+                root: /Users/chibangnguyen/ayai/UAV/denseUAV_baseline
+                startedAt: "2026-03-15T15:47:48.165806Z"
+                writerId: eoljcdf5bvg10l643zyx0hey0s6l8u00
+        m: []
+        python_version: 3.11.14
+        t:
+            "1":
+                - 1
+            "2":
+                - 1
+            "3":
+                - 2
+                - 13
+                - 16
+                - 61
+            "4": 3.11.14
+            "5": 0.25.0
+            "12": 0.25.0
+            "13": darwin-arm64
+dict_name:
+    value: denseuav-test-results
+result_key:
+    value: Swinv2S_256_mode_1
+run_name:
+    value: null

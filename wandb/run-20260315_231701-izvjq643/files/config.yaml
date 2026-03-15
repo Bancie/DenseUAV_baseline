@@ -1,0 +1,60 @@
+_wandb:
+    value:
+        cli_version: 0.25.0
+        e:
+            qb92chs0cum1hffq9bx3pfffdbmciupn:
+                args:
+                    - --result_key
+                    - Convnext_T_mode_1
+                    - --root_dir
+                    - /Users/chibangnguyen/ayai/UAV/denseUAV_baseline/data/DenseUAV_data
+                    - --wandb_mode
+                    - online
+                    - --wandb_project
+                    - sdm_eval
+                codePath: baseline/evaluateDistance.py
+                codePathLocal: baseline/evaluateDistance.py
+                email: chibangn1@gmail.com
+                executable: /Users/chibangnguyen/ayai/UAV/denseUAV_baseline/test/.venv/bin/python
+                git:
+                    commit: b9a2c16587013cb8157feb432fd03d8809e8f6f8
+                    remote: https://github.com/Bancie/denseUAV_baseline.git
+                host: Chis-MacBook-Pro.local
+                os: macOS-26.3.1-arm64-arm-64bit
+                program: /Users/chibangnguyen/ayai/UAV/denseUAV_baseline/baseline/evaluateDistance.py
+                python: CPython 3.11.14
+                root: /Users/chibangnguyen/ayai/UAV/denseUAV_baseline
+                startedAt: "2026-03-15T16:17:01.897637Z"
+                writerId: qb92chs0cum1hffq9bx3pfffdbmciupn
+        m: []
+        python_version: 3.11.14
+        t:
+            "1":
+                - 1
+                - 41
+            "2":
+                - 1
+                - 41
+            "3":
+                - 2
+                - 13
+                - 16
+                - 61
+            "4": 3.11.14
+            "5": 0.25.0
+            "12": 0.25.0
+            "13": darwin-arm64
+K:
+    value:
+        - 1
+        - 3
+        - 5
+        - 10
+M:
+    value: 5000
+mode:
+    value: "1"
+result_key:
+    value: Convnext_T_mode_1
+root_dir:
+    value: /Users/chibangnguyen/ayai/UAV/denseUAV_baseline/data/DenseUAV_data

@@ -1130,9 +1130,6 @@ def _(modal):
     _d = modal.Dict.from_name("denseuav-test-results", create_if_missing=False)
     for _k in _d.keys():
         print(_k)
-
-    _data = _d["Convnext_T_mode_1"]
-    _data["gallery_f"]
     return
 
 
