@@ -1106,5 +1106,35 @@ def _(mo):
     return
 
 
+@app.cell
+def _():
+    import modal
+
+    # Kết nối Dict và lấy đúng key (vd. một kiến trúc)
+    _d = modal.Dict.from_name("denseuav-test-results", create_if_missing=False)
+    _data = _d["Swinv2S_256_mode_1"]   # hoặc "Convnext_T_mode_1", ...
+
+    _data
+
+    # gallery_f = _data['gallery_f']
+    # query_f = _data['query_f']
+    # gallery_label = _data['gallery_label']
+    # gallery_path = _data['gallery_path']
+    # query_label = _data['query_label']
+    # query_path = _data['query_path']
+    return (modal,)
+
+
+@app.cell
+def _(modal):
+    _d = modal.Dict.from_name("denseuav-test-results", create_if_missing=False)
+    for _k in _d.keys():
+        print(_k)
+
+    _data = _d["Convnext_T_mode_1"]
+    _data["gallery_f"]
+    return
+
+
 if __name__ == "__main__":
     app.run()
