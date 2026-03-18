@@ -2,6 +2,9 @@
 
 This document analyzes the author's official baseline from the [DenseUAV](https://github.com/Dmmm1997/DenseUAV) GitHub repository, located in the `baseline/` folder.
 
+**Internship organization**: Institute of Mathematical and Computational Sciences (IMACS), Ho Chi Minh City University of Technology, Vietnam  
+**Supervisor**: M.Sc. NGUYEN VAN GIA THINH  
+
 ---
 
 ## Table of Contents
